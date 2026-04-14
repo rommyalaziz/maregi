@@ -96,9 +96,9 @@
   z-index: 10;
   background-color: #f8f9fa; /* Light subtle gray as seen in screenshot */
   font-weight: 600;
-  font-size: 9.5px;
+  font-size: 8.5px;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   color: var(--color-text-muted);
 }
 
