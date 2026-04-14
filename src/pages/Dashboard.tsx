@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { Trophy, AlertCircle, Users, ClipboardCheck, MessageSquare, TrendingUp } from 'lucide-react';
