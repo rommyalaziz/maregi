@@ -19,7 +19,7 @@ const Sidebar = () => {
       <div className="sidebar-header">
         <div className="logo-box">
           <div className="logo-icon"></div>
-          <span className="logo-text">MAREGI</span>
+          <span className="logo-text">SIREGI</span>
         </div>
       </div>
       

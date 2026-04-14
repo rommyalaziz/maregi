@@ -68,8 +68,8 @@ const Login = () => {
           <div className="login-logo-large">
             <Building2 size={40} color="#FFFFFF" />
           </div>
-          <h1>MAREGI</h1>
-          <p>MSA Performance & Branch Tracker Regional I</p>
+          <h1>SIREGI</h1>
+          <p>Sistem Informasi Regional I</p>
         </div>
       </div>
 
