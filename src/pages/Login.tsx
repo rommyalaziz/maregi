@@ -109,7 +109,7 @@ const Login = () => {
             </button>
           </form>
           <div className="login-credit">
-            Crafted with ❤️ by rommyalaziz
+            © 2026 by rommyalaziz
           </div>
         </div>
       </div>
