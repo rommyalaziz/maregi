@@ -38,7 +38,7 @@ const StaffProgress = () => {
     if (s === 'on track' || s === 'on-track') {
       return { variant: 'on-track' as BadgeVariant, label: 'On Track', color: 'var(--color-secondary)' };
     }
-    if (s === 'delayed') {
+    if (s === 'delayed' || s === 'needs focus' || s === 'needs-focus') {
       return { variant: 'delayed' as BadgeVariant, label: 'Needs Focus', color: 'var(--color-warning)' };
     }
     return { variant: 'critical' as BadgeVariant, label: 'Critical', color: 'var(--color-danger)' };
@@ -56,7 +56,7 @@ const StaffProgress = () => {
         </div>
         <div className="header-actions">
           <div className="search-box">
-            <Search size={18} />
+            <Search size={16} />
             <input type="text" placeholder="Cari staf..." />
           </div>
           <button className="btn btn-outline">
