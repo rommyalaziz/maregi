@@ -11,21 +11,51 @@ const StaffProgress = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const [selectedMonth, setSelectedMonth] = useState('April');
+  const [cumulativeData, setCumulativeData] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchStaffData();
-  }, []);
+  }, [selectedMonth]);
 
   const fetchStaffData = async () => {
     try {
       setLoading(true);
-      const { data: staff, error } = await supabase
-        .from('staff_progress')
-        .select('*')
-        .order('performance', { ascending: false });
+      // Fetch from VIEW instead of table for automatic KPI calculation
+      let query = supabase
+        .from('v_staff_report')
+        .select('*');
+      
+      if (selectedMonth !== 'Semua') {
+        query = query.eq('periode', selectedMonth);
+      }
 
+      const { data: staff, error } = await query;
       if (error) throw error;
-      setData(staff || []);
+
+      // Calculate Total KPI for each staff
+      const calculatedData = (staff || []).map(s => {
+        const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
+                         (s.p_sg || 0) + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0);
+        
+        // Determine Status based on Total KPI
+        let status = 'critical';
+        let color = '#ef4444'; // Red
+        
+        if (totalKPI > 70) {
+          status = 'on-track';
+          color = '#22c55e'; // Green
+        } else if (totalKPI >= 40) {
+          status = 'delayed';
+          color = '#f59e0b'; // Orange
+        }
+
+        return { ...s, totalKPI, status, kpiColor: color };
+      });
+
+      // Sort by Total KPI descending
+      setData(calculatedData.sort((a, b) => b.totalKPI - a.totalKPI));
     } catch (error) {
       console.error('Error fetching staff data:', error);
     } finally {
@@ -36,32 +66,99 @@ const StaffProgress = () => {
   const getStatusConfig = (status: string) => {
     const s = (status || '').toLowerCase().trim();
     if (s === 'on track' || s === 'on-track') {
-      return { variant: 'on-track' as BadgeVariant, label: 'On Track', color: 'var(--color-secondary)' };
+      return { variant: 'on-track' as BadgeVariant, label: 'On Track' };
     }
     if (s === 'delayed' || s === 'needs focus' || s === 'needs-focus') {
-      return { variant: 'delayed' as BadgeVariant, label: 'Needs Focus', color: 'var(--color-warning)' };
+      return { variant: 'delayed' as BadgeVariant, label: 'Needs Focus' };
     }
-    return { variant: 'critical' as BadgeVariant, label: 'Critical', color: 'var(--color-danger)' };
+    return { variant: 'critical' as BadgeVariant, label: 'Critical' };
   };
 
-  const openDrawer = (staff: any) => setSelectedStaff(staff);
-  const closeDrawer = () => setSelectedStaff(null);
+  const openDrawer = async (staff: any) => {
+    setSelectedStaff(staff);
+    setCumulativeData(null);
+    
+    // Fetch cumulative data (sum across all months)
+    try {
+      const { data: records, error } = await supabase
+        .from('staff_progress')
+        .select('*')
+        .eq('id', staff.id);
+      
+      if (error) throw error;
+
+      if (records) {
+        const totals = records.reduce((acc, curr) => ({
+          rv: (acc.rv || 0) + (curr.release_voucher || 0),
+          up: (acc.up || 0) + (curr.unapprove_pengajuan || 0),
+          rd: (acc.rd || 0) + (curr.recalculate_delinquency || 0),
+          tp: (acc.tp || 0) + (curr.transfer_pencairan || 0),
+          sg: (acc.sg || 0) + (curr.salah_generate || 0),
+          ppi: (acc.ppi || 0) + (curr.ppi_not_entry || 0),
+          val: (acc.val || 0) + (curr.validasi || 0),
+          tpk: (acc.tpk || 0) + (curr.tiket_perbaikan || 0),
+        }), {});
+
+        // Calculation logic to get points from totals
+        const calcPts = (val: number, params: any) => {
+          for (const p of params) {
+            if (val >= p.min && val <= p.max) return p.pts;
+          }
+          return 0;
+        };
+
+        const p_rv = calcPts(totals.rv, [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:5},{min:8,max:10,pts:4},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
+        const p_up = calcPts(totals.up, [{min:0,max:0,pts:10},{min:1,max:1,pts:7},{min:2,max:3,pts:5},{min:4,max:5,pts:3},{min:6,max:7,pts:2},{min:8,max:10,pts:1},{min:11,max:999,pts:0}]);
+        const p_rd = calcPts(totals.rd, [{min:0,max:0,pts:15},{min:1,max:1,pts:11},{min:2,max:3,pts:9},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:10,pts:3},{min:11,max:13,pts:1},{min:14,max:999,pts:0}]);
+        const p_tp = calcPts(totals.tp, [{min:0,max:0,pts:15},{min:1,max:1,pts:10},{min:2,max:3,pts:5},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
+        const p_sg = calcPts(totals.sg, [{min:0,max:0,pts:15},{min:1,max:1,pts:11},{min:2,max:3,pts:9},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:999,pts:0}]);
+        const p_ppi = calcPts(totals.ppi, [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:5,pts:7},{min:6,max:10,pts:5},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
+        const p_val = calcPts(totals.val, [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:5},{min:8,max:10,pts:4},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
+        const p_tpk = calcPts(totals.tpk, [{min:0,max:0,pts:15},{min:1,max:1,pts:5},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
+
+        const totalPoints = p_rv + p_up + p_rd + p_tp + p_sg + p_ppi + p_val + p_tpk;
+        setCumulativeData({ ...totals, totalPoints });
+      }
+    } catch (err) {
+      console.error('Error fetching cumulative data:', err);
+    }
+  };
+
+  const closeDrawer = () => {
+    setSelectedStaff(null);
+    setCumulativeData(null);
+  };
 
   return (
     <div className="page-container">
       <div className="page-header">
         <div>
-          <h1>Progres Staf</h1>
-          <p>Pantau KPI dan target kinerja individu.</p>
+          <h1>Progres KPI Staf</h1>
+          <p>Pantau ketercapaian target KPI individu secara real-time.</p>
         </div>
         <div className="header-actions">
+          <div className="filter-group">
+            <Filter size={16} />
+            <select 
+              className="month-select" 
+              value={selectedMonth} 
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="April">April</option>
+              <option value="Maret">Maret</option>
+              <option value="Februari">Februari</option>
+              <option value="Semua">Semua Periode</option>
+            </select>
+          </div>
           <div className="search-box">
             <Search size={16} />
-            <input type="text" placeholder="Cari staf..." />
+            <input 
+              type="text" 
+              placeholder="Cari staf..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <button className="btn btn-outline">
-            <Filter size={16} /> Saring
-          </button>
         </div>
       </div>
 
@@ -74,17 +171,17 @@ const StaffProgress = () => {
                 <th className="center-text">Kode</th>
                 <th>Cabang</th>
                 <th>FSA/MSA</th>
-                <th className="center-text">Release<br/>Voucher</th>
-                <th className="center-text">Unapprove<br/>Pengajuan</th>
-                <th className="center-text">Recalculate<br/>Delinquency</th>
-                <th className="center-text">Transfer<br/>Pencairan</th>
-                <th className="center-text">Salah<br/>Generate</th>
-                <th className="center-text">PPI Not<br/>Entry</th>
-                <th className="center-text">Validasi</th>
-                <th className="center-text">Tiket<br/>Perbaikan</th>
-                <th style={{ minWidth: '60px' }}>Kinerja KPI</th>
-                <th className="center-text">Status</th>
-                <th className="center-text">Aksi</th>
+                <th className="center-text">RELEASE<br/>VOUCHER</th>
+                <th className="center-text">UNAPPROVE<br/>PENGAJUAN</th>
+                <th className="center-text">RECALCULATE<br/>DELINQUENCY</th>
+                <th className="center-text">TRANSFER<br/>PENCAIRAN</th>
+                <th className="center-text">SALAH<br/>GENERATE</th>
+                <th className="center-text">PPI NOT<br/>ENTRY</th>
+                <th className="center-text">VALIDASI</th>
+                <th className="center-text">TIKET<br/>PERBAIKAN</th>
+                <th style={{ minWidth: '100px' }}>KINERJA KPI</th>
+                <th className="center-text">STATUS</th>
+                <th className="center-text">AKSI</th>
               </tr>
             </thead>
             <tbody>
@@ -93,18 +190,24 @@ const StaffProgress = () => {
                   <td colSpan={15} className="center-text" style={{ padding: '40px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
                       <Loader2 className="animate-spin" size={24} />
-                      <span>Memuat data dari database...</span>
+                      <span>Memuat data KPI...</span>
                     </div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
                   <td colSpan={15} className="center-text" style={{ padding: '40px', color: 'var(--color-text-muted)' }}>
-                    Data tidak ditemukan. Silakan tambahkan data di Supabase.
+                    Data KPI tidak ditemukan.
                   </td>
                 </tr>
               ) : (
-                data.map((staff, index) => {
+                data
+                  .filter(s => 
+                    s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    s.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    s.id.includes(searchQuery)
+                  )
+                  .map((staff, index) => {
                   const statusConfig = getStatusConfig(staff.status);
                   return (
                     <tr key={staff.id}>
@@ -112,19 +215,26 @@ const StaffProgress = () => {
                       <td className="center-text mono">{staff.id}</td>
                       <td className="fw-500">{staff.branch}</td>
                       <td>{staff.name}</td>
-                      <td className="center-text">{staff.release_voucher === 0 ? <span className="text-muted">-</span> : staff.release_voucher}</td>
-                      <td className="center-text">{staff.unapprove_pengajuan === 0 ? <span className="text-muted">-</span> : staff.unapprove_pengajuan}</td>
-                      <td className="center-text">{staff.recalculate_delinquency === 0 ? <span className="text-muted">-</span> : staff.recalculate_delinquency}</td>
-                      <td className="center-text">{staff.transfer_pencairan === 0 ? <span className="text-muted">-</span> : staff.transfer_pencairan}</td>
-                      <td className="center-text">{staff.salah_generate === 0 ? <span className="text-muted">-</span> : staff.salah_generate}</td>
-                      <td className="center-text">{staff.ppi_not_entry === 0 ? <span className="text-muted">-</span> : staff.ppi_not_entry}</td>
-                      <td className="center-text">{staff.validasi === 0 ? <span className="text-muted">-</span> : staff.validasi}</td>
-                      <td className="center-text">{staff.tiket_perbaikan === 0 ? <span className="text-muted">-</span> : staff.tiket_perbaikan}</td>
+                      <td className="center-text mono">{staff.release_voucher === 0 ? '-' : staff.release_voucher}</td>
+                      <td className="center-text mono">{staff.unapprove_pengajuan === 0 ? '-' : staff.unapprove_pengajuan}</td>
+                      <td className="center-text mono">{staff.recalculate_delinquency === 0 ? '-' : staff.recalculate_delinquency}</td>
+                      <td className="center-text mono">{staff.transfer_pencairan === 0 ? '-' : staff.transfer_pencairan}</td>
+                      <td className="center-text mono">{staff.salah_generate === 0 ? '-' : staff.salah_generate}</td>
+                      <td className="center-text mono">{staff.ppi_not_entry === 0 ? '-' : staff.ppi_not_entry}</td>
+                      <td className="center-text mono">{staff.validasi === 0 ? '-' : staff.validasi}</td>
+                      <td className="center-text mono">{staff.tiket_perbaikan === 0 ? '-' : staff.tiket_perbaikan}</td>
                       <td>
-                        <ProgressBar 
-                          progress={staff.performance} 
-                          color={statusConfig.color}
-                        />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <ProgressBar 
+                              progress={staff.totalKPI} 
+                              color={staff.kpiColor}
+                            />
+                          </div>
+                          <span className="mono fw-600" style={{ fontSize: '12px', minWidth: '35px', color: staff.kpiColor }}>
+                            {staff.totalKPI}%
+                          </span>
+                        </div>
                       </td>
                       <td className="center-text">
                         <Badge variant={statusConfig.variant}>
@@ -132,7 +242,7 @@ const StaffProgress = () => {
                         </Badge>
                       </td>
                       <td className="center-text">
-                        <button className="icon-btn" title="Lihat Detail" onClick={() => openDrawer(staff)}>
+                        <button className="icon-btn" title="Lihat Poin Detail" onClick={() => openDrawer(staff)}>
                           <Eye size={12} />
                         </button>
                       </td>
@@ -153,27 +263,80 @@ const StaffProgress = () => {
         {selectedStaff && (
           <div className="drawer-content">
             <div className="drawer-section">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span className="fw-500" style={{ fontSize: '18px' }}>{selectedStaff.role}</span>
-                <span className="mono">{selectedStaff.id}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span className="fw-500" style={{ fontSize: '18px' }}>{selectedStaff.name}</span>
+                <span className="mono text-muted">{selectedStaff.id}</span>
               </div>
-              <p><strong>Cabang Utama:</strong> {selectedStaff.branch}</p>
+              <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>{selectedStaff.branch}</p>
             </div>
             
             <div className="drawer-section">
-              <h3>Evaluasi KPI</h3>
-              <div style={{ marginTop: '8px' }}>
+              <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Performa {selectedMonth === 'Semua' ? 'Total' : selectedMonth}
+                <Badge variant={getStatusConfig(selectedStaff.status).variant}>
+                  {selectedStaff.totalKPI}%
+                </Badge>
+              </h3>
+              <div style={{ marginTop: '12px' }}>
                 <ProgressBar 
-                  progress={selectedStaff.performance} 
-                  label="Pencapaian Target"
-                  color={getStatusConfig(selectedStaff.status).color}
+                  progress={selectedStaff.totalKPI} 
+                  color={selectedStaff.kpiColor}
+                  height="8px"
                 />
               </div>
             </div>
 
-            <div className="drawer-section" style={{ marginTop: '24px' }}>
-              <button className="btn btn-primary w-full justify-center">
-                Unduh Laporan Lengkap
+            {cumulativeData && (
+              <div className="drawer-section">
+                <h3>Akumulasi Kesalahan (Feb - Apr)</h3>
+                <div className="cumulative-grid">
+                  <div className="cum-item">
+                    <span className="label">Release Voucher</span>
+                    <span className="value">{cumulativeData.rv}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Unapprove Pengajuan</span>
+                    <span className="value">{cumulativeData.up}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Recalculate Delinquency</span>
+                    <span className="value">{cumulativeData.rd}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Transfer Pencairan</span>
+                    <span className="value">{cumulativeData.tp}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Salah Generate</span>
+                    <span className="value">{cumulativeData.sg}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">PPI Not Entry</span>
+                    <span className="value">{cumulativeData.ppi}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Validasi</span>
+                    <span className="value">{cumulativeData.val}</span>
+                  </div>
+                  <div className="cum-item">
+                    <span className="label">Tiket Perbaikan</span>
+                    <span className="value">{cumulativeData.tpk}</span>
+                  </div>
+                </div>
+                
+                <div className="cum-footer" style={{ marginTop: '16px', padding: '12px', background: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                   <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>Estimasi Skor Akumulatif</div>
+                   <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-primary)' }}>{cumulativeData.totalPoints}%</div>
+                </div>
+              </div>
+            )}
+
+            <div className="drawer-section" style={{ marginTop: 'auto', paddingTop: '24px' }}>
+              <button 
+                className="btn btn-primary w-full justify-center"
+                onClick={() => window.print()}
+              >
+                Cetak Laporan
               </button>
             </div>
           </div>

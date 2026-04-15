@@ -1,10 +1,16 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Users, FileBarChart, LogOut } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, FileBarChart, LogOut, UserPlus } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  
+  // Get user session to check role
+  const sessionData = localStorage.getItem('msa_session');
+  const user = sessionData ? JSON.parse(sessionData) : null;
+  // Make admin check more robust (case-insensitive)
+  const isAdmin = user?.role?.toLowerCase().includes('admin');
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,11 +42,19 @@ const Sidebar = () => {
           <Users size={16} />
           <span>Progres Staf</span>
         </NavLink>
+        
+        {isAdmin && (
+          <NavLink to="/admin/update" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <UserPlus size={16} />
+            <span>Update Kesalahan</span>
+          </NavLink>
+        )}
+
         {/* Placeholder for future Reports view if needed */}
-        <div className="nav-item disabled">
+        <NavLink to="/reports" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <FileBarChart size={16} />
           <span>Laporan Detail</span>
-        </div>
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">

@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import BranchProgress from './pages/BranchProgress';
 import StaffProgress from './pages/StaffProgress';
+import AdminStaffUpdate from './pages/AdminStaffUpdate';
+import DetailedReport from './pages/DetailedReport';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -30,6 +32,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/branches" element={<BranchProgress />} />
           <Route path="/staff" element={<StaffProgress />} />
+          <Route path="/reports" element={<DetailedReport />} />
+          <Route path="/admin/update" element={<AdminStaffUpdate />} />
         </Route>
 
         {/* Catch all redirect to login */}

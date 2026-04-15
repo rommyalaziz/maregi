@@ -1,0 +1,155 @@
+:root {
+  --neon-green: #22c55e;
+  --neon-purple: #a855f7;
+  --neon-blue: #3b82f6;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --dark-bg: #0f172a;
+}
+
+.visual-dashboard {
+  padding: 24px;
+  background-color: var(--dark-bg);
+  min-height: calc(100vh - 64px);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-radius: var(--radius-lg);
+}
+
+.visual-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--neon-green), var(--neon-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.visual-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.glass-card h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--neon-green);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.top-performers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.performer-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.performer-card:hover {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: var(--neon-green);
+}
+
+.performer-rank {
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.1);
+  width: 24px;
+}
+
+.performer-info {
+  flex: 1;
+}
+
+.performer-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.performer-branch {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.performer-score {
+  font-family: 'Inter', monospace;
+  font-weight: 700;
+  color: var(--neon-green);
+}
+
+/* Recharts Customization */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+.recharts-default-tooltip {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid var(--glass-border) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 8px !important;
+  color: white !important;
+}
+
+.radar-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}

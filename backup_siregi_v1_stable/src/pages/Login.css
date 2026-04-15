@@ -1,0 +1,208 @@
+.login-split-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+  /* Global full screen background */
+  background-image: url('/login-bg.jpg'); 
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-bg-main);
+}
+
+.login-split-layout.fade-in {
+  opacity: 1;
+}
+
+/* LEFT SIDE (60%) */
+.login-image-section {
+  flex: 5.5; 
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+}
+
+.login-image-overlay {
+  position: absolute;
+  inset: 0;
+  /* Soft green transparent overlay 70% opacity over the left side only */
+  background: rgba(46, 125, 97, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+.login-brand-left {
+  position: relative;
+  z-index: 2;
+  color: white;
+  max-width: 480px;
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-brand-left h1 {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 16px;
+  color: #FFFFFF;
+}
+
+.login-brand-left p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+}
+
+/* RIGHT SIDE (40%) */
+.login-form-section {
+  flex: 4.5; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Glassmorphism white panel so the background peeks through */
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 40px;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.login-form-box {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-header {
+  margin-bottom: 40px;
+}
+
+.login-header h2 {
+  font-size: 32px;
+  color: var(--color-text-main);
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+  font-weight: 800;
+}
+
+.login-subtitle {
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+.login-error {
+  color: #991B1B;
+  margin-bottom: 24px;
+  font-size: 13px;
+  background: rgba(254, 242, 242, 0.8);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #FECACA;
+}
+
+form .form-group {
+  margin-bottom: 24px;
+}
+
+form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 8px;
+}
+
+form input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  transition: all var(--transition-fast);
+  background-color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  outline: none;
+}
+
+form input:focus {
+  border-color: var(--color-primary);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(168, 230, 207, 0.3);
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: 12px;
+}
+
+.login-submit-btn:hover {
+  background-color: #1F5E48;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(46, 125, 97, 0.25);
+}
+
+.login-submit-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 800px) {
+  .login-image-section {
+    display: none;
+  }
+  .login-form-section {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-left: none;
+  }
+}
+
+.login-credit {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  opacity: 0.4;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  transition: opacity 0.3s ease;
+}
+
+.login-credit:hover {
+  opacity: 1;
+  color: var(--color-primary);
+}
