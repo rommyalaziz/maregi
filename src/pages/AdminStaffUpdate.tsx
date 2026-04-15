@@ -141,21 +141,30 @@ const AdminStaffUpdate = () => {
 
       // 1. Handle File Upload if there's a new file
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${selectedStaffId}_${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
+        try {
+          const fileExt = avatarFile.name.split('.').pop();
+          const fileName = `${selectedStaffId}_${Date.now()}.${fileExt}`;
+          const filePath = `avatars/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, avatarFile, { upsert: true });
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, avatarFile, { upsert: true });
 
-        if (uploadError) throw uploadError;
+          if (uploadError) {
+             if (uploadError.message === 'Bucket not found') {
+               throw new Error('Penyimpanan foto gagal: Anda belum membuat bucket "avatars" di Supabase Dashboard.');
+             }
+             throw uploadError;
+          }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filePath);
-        
-        avatar_url = publicUrl;
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+          
+          avatar_url = publicUrl;
+        } catch (storageErr: any) {
+          throw storageErr;
+        }
       }
       
       const payload = {
