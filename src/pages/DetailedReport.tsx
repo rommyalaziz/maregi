@@ -164,7 +164,7 @@ const DetailedReport = () => {
                 <th className="center-text">VALIDASI</th>
                 <th className="center-text">TIKET<br/>PERBAIKAN</th>
                 <th className="center-text">PROGRES TREN</th>
-                <th style={{ minWidth: '120px' }}>KPI TOTAL (%)</th>
+                <th style={{ minWidth: '120px' }}>Point (%)</th>
               </tr>
             </thead>
             <tbody>

@@ -36,7 +36,7 @@ const Sidebar = () => {
         </NavLink>
         <NavLink to="/staff" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Users size={16} />
-          <span>Progres Staf</span>
+          <span>Performance Review</span>
         </NavLink>
         
         {isAdmin && (

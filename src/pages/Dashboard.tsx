@@ -118,7 +118,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <h2 className="section-title">Informasi Penting Progres Staf</h2>
+      <h2 className="section-title">Informasi Penting Performance Review</h2>
       <div className="metrics-grid">
         <Card className="metric-card">
           <div className="metric-header">

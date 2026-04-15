@@ -133,7 +133,7 @@ const StaffProgress = () => {
     <div className="page-container">
       <div className="page-header">
         <div>
-          <h1>Progres KPI Staf</h1>
+          <h1>MSA Performance Review</h1>
           <p>Pantau ketercapaian target KPI individu secara real-time.</p>
         </div>
         <div className="header-actions">
@@ -179,7 +179,7 @@ const StaffProgress = () => {
                 <th className="center-text">PPI NOT<br/>ENTRY</th>
                 <th className="center-text">VALIDASI</th>
                 <th className="center-text">TIKET<br/>PERBAIKAN</th>
-                <th style={{ minWidth: '100px' }}>KINERJA KPI</th>
+                <th style={{ minWidth: '100px' }}>Point</th>
                 <th className="center-text">STATUS</th>
                 <th className="center-text">AKSI</th>
               </tr>
