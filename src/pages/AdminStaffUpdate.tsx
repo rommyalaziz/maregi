@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Card } from '../components/ui/Card';
-import { Loader2, Save, RotateCcw, AlertTriangle, ImagePlus } from 'lucide-react';
+import { Loader2, Save, RotateCcw, ImagePlus } from 'lucide-react';
 
 const AdminStaffUpdate = () => {
   const [loading, setLoading] = useState(false);
@@ -225,22 +225,23 @@ const AdminStaffUpdate = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="page-container" style={{ padding: '10px 20px' }}>
+      <div className="page-header" style={{ marginBottom: '12px' }}>
         <div>
-          <h1>Manajemen Staf & Kesalahan</h1>
-          <p>Kelola profil, foto, dan total kesalahan staf secara absolut.</p>
+          <h1 style={{ fontSize: '18px', marginBottom: '2px' }}>Manajemen Staf & Poin</h1>
+          <p style={{ fontSize: '11px' }}>Kelola profil dan total kesalahan secara absolut.</p>
         </div>
       </div>
 
-      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', paddingBottom: '40px' }}>
-        <Card style={{ padding: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px', borderBottom: '1px solid var(--color-border)', paddingBottom: '20px' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+        <Card style={{ padding: '16px' }}>
+          {/* SELECTORS ROW */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
             <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '13px' }}>Pilih Periode</label>
+              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Periode</label>
               <select 
                 className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '10px' }}
+                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '36px', fontSize: '13px' }}
                 value={selectedPeriode}
                 onChange={(e) => setSelectedPeriode(e.target.value)}
               >
@@ -251,10 +252,10 @@ const AdminStaffUpdate = () => {
             </div>
 
             <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '13px' }}>Pilih Staf</label>
+              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Pilih Staf</label>
               <select 
                 className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '10px' }}
+                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '36px', fontSize: '13px' }}
                 value={selectedStaffId}
                 onChange={(e) => setSelectedStaffId(e.target.value)}
               >
@@ -266,10 +267,10 @@ const AdminStaffUpdate = () => {
           </div>
 
           <form onSubmit={handleUpdate}>
-            {/* AVATAR SECTION */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', padding: '16px', background: '#f8fafc', borderRadius: '12px' }}>
+            {/* COMPACT AVATAR SECTION */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                <div style={{ position: 'relative' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '3px solid white', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     <img 
                       src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffList.find(s => s.id === selectedStaffId)?.name || 'Staf')}&background=random&color=fff&bold=true`} 
                       alt="Preview" 
@@ -279,35 +280,43 @@ const AdminStaffUpdate = () => {
                   <button 
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ position: 'absolute', bottom: '0', right: '0', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                   >
-                    <ImagePlus size={14} style={{ margin: '0 auto' }} />
+                    <ImagePlus size={10} />
                   </button>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileChange} 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
-                  />
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
                </div>
-               <div>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>Foto Profil Staf</h4>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-text-muted)' }}>Mendukung format JPG, PNG. Maksimal 2MB.</p>
-                  {avatarFile && <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600, display: 'block', marginTop: '4px' }}>File siap diunggah: {avatarFile.name}</span>}
+               <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0', fontSize: '13px' }}>Foto Profil</h4>
+                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--color-text-muted)' }}>Maks 2MB. {avatarFile && `Siap: ${avatarFile.name.substring(0, 15)}...`}</p>
                </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            {/* ERROR/SUCCESS MESSAGE - Compact */}
+            {message.text && (
+              <div style={{ 
+                padding: '8px 12px', borderRadius: '6px', marginBottom: '12px',
+                backgroundColor: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
+                color: message.type === 'success' ? '#065F46' : '#991B1B',
+                fontSize: '12px', border: `1px solid ${message.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
+                display: 'flex', alignItems: 'center', gap: '6px'
+              }}>
+                <Save size={14} />
+                {message.text}
+              </div>
+            )}
+
+            {/* COMPACT CATEGORIES GRID */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
               {categories.map(c => (
                 <div key={c.id} className="form-group">
-                  <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: '500' }}>
-                    {c.name.toUpperCase()}
+                  <label style={{ display: 'block', marginBottom: '3px', fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {c.name.split(' ').length > 2 ? c.name.split(' ')[0] + ' ' + c.name.split(' ')[1] : c.name}
                   </label>
                   <input 
                     type="number" 
                     className="btn btn-outline w-full" 
-                    style={{ textAlign: 'left', padding: '10px', fontSize: '14px', fontWeight: '600' }}
+                    style={{ textAlign: 'left', padding: '6px 10px', fontSize: '13px', fontWeight: '700', height: '36px' }}
                     value={(formData as any)[c.id]}
                     onChange={(e) => handleInputChange(c.id, e.target.value)}
                     min="0"
@@ -316,39 +325,23 @@ const AdminStaffUpdate = () => {
               ))}
             </div>
 
-            {message.text && (
-              <div style={{ 
-                padding: '12px', borderRadius: '8px', marginBottom: '20px',
-                backgroundColor: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
-                color: message.type === 'success' ? '#065F46' : '#991B1B',
-                fontSize: '14px', border: `1px solid ${message.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
-                display: 'flex', alignItems: 'center', gap: '8px'
-              }}>
-                <Save size={16} />
-                {message.text}
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary w-full" disabled={loading} style={{ justifyContent: 'center', height: '44px', fontSize: '15px' }}>
-              {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-              <span style={{ marginLeft: '10px' }}>Simpan Update Profil & Poin</span>
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+               <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 3, justifyContent: 'center', height: '38px', fontSize: '14px' }}>
+                {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                <span style={{ marginLeft: '8px' }}>Simpan Update Profil & Poin</span>
+              </button>
+              
+              <button 
+                type="button"
+                onClick={handleReset} 
+                className="btn btn-outline" 
+                style={{ flex: 1, color: '#CD1818', borderColor: '#FECACA', justifyContent: 'center', height: '38px', fontSize: '13px' }}
+                disabled={loading}
+              >
+                <RotateCcw size={14} />
+              </button>
+            </div>
           </form>
-        </Card>
-
-        <Card style={{ padding: '24px', marginTop: '24px', borderColor: '#FEF2F2' }}>
-          <h3 style={{ color: '#CD1818', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-            <AlertTriangle size={18} /> Area Berbahaya
-          </h3>
-          <button 
-            onClick={handleReset} 
-            className="btn btn-outline" 
-            style={{ color: '#CD1818', borderColor: '#FECACA', width: '100%', justifyContent: 'center', fontSize: '13px' }}
-            disabled={loading}
-          >
-            <RotateCcw size={16} style={{ marginRight: '8px' }} />
-            Hapus Data Periode {selectedPeriode}
-          </button>
         </Card>
       </div>
     </div>
