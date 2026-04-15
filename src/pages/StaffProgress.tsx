@@ -39,16 +39,16 @@ const StaffProgress = () => {
         const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
                          (s.p_sg || 0) + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0);
         
-        // Determine Status based on Total KPI
+        // Determine Status based on Total KPI (New Thresholds)
         let status = 'critical';
         let color = '#ef4444'; // Red
         
-        if (totalKPI > 70) {
+        if (totalKPI >= 90) {
           status = 'on-track';
           color = '#22c55e'; // Green
-        } else if (totalKPI >= 40) {
+        } else if (totalKPI >= 70) {
           status = 'delayed';
-          color = '#f59e0b'; // Orange
+          color = '#f59e0b'; // Yellow/Orange
         }
 
         return { ...s, totalKPI, status, kpiColor: color };
@@ -69,7 +69,7 @@ const StaffProgress = () => {
       return { variant: 'on-track' as BadgeVariant, label: 'On Track' };
     }
     if (s === 'delayed' || s === 'needs focus' || s === 'needs-focus') {
-      return { variant: 'delayed' as BadgeVariant, label: 'Needs Focus' };
+      return { variant: 'delayed' as BadgeVariant, label: 'Need Focus' };
     }
     return { variant: 'critical' as BadgeVariant, label: 'Critical' };
   };
@@ -134,7 +134,7 @@ const StaffProgress = () => {
       <div className="page-header">
         <div>
           <h1>MSA Performance Review</h1>
-          <p>Pantau ketercapaian target KPI individu secara real-time.</p>
+          <p>Live tracking</p>
         </div>
         <div className="header-actions">
           <div className="filter-group">

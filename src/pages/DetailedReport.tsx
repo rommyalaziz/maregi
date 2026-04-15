@@ -103,8 +103,8 @@ const DetailedReport = () => {
           else if (aprilVal < maretVal) trendStatus = 'down';
 
           let color = '#ef4444';
-          if (totalKPI > 70) color = '#22c55e';
-          else if (totalKPI >= 40) color = '#f59e0b';
+          if (totalKPI >= 90) color = '#22c55e';
+          else if (totalKPI >= 70) color = '#f59e0b';
 
           return { ...s, totalKPI, kpiColor: color, trendData, trendStatus };
         });
