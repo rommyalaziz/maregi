@@ -34,20 +34,22 @@ const Sidebar = () => {
           <LayoutDashboard size={16} />
           <span>Beranda</span>
         </NavLink>
-        <NavLink to="/branches" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Building2 size={16} />
-          <span>Progres Cabang</span>
-        </NavLink>
         <NavLink to="/staff" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Users size={16} />
           <span>Progres Staf</span>
         </NavLink>
         
         {isAdmin && (
-          <NavLink to="/admin/update" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <UserPlus size={16} />
-            <span>Update Kesalahan</span>
-          </NavLink>
+          <>
+            <NavLink to="/branches" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <Building2 size={16} />
+              <span>Progres Cabang</span>
+            </NavLink>
+            <NavLink to="/admin/update" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <UserPlus size={16} />
+              <span>Update Kesalahan</span>
+            </NavLink>
+          </>
         )}
 
         {/* Placeholder for future Reports view if needed */}
