@@ -267,10 +267,10 @@ const AdminStaffUpdate = () => {
           </div>
 
           <form onSubmit={handleUpdate}>
-            {/* COMPACT AVATAR SECTION */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-               <div style={{ position: 'relative' }}>
-                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid white', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            {/* COMPACT AVATAR SECTION - Slimmed down further */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+               <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '1px solid white' }}>
                     <img 
                       src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffList.find(s => s.id === selectedStaffId)?.name || 'Staf')}&background=random&color=fff&bold=true`} 
                       alt="Preview" 
@@ -280,15 +280,15 @@ const AdminStaffUpdate = () => {
                   <button 
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                   >
                     <ImagePlus size={10} />
                   </button>
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
                </div>
                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0', fontSize: '13px' }}>Foto Profil</h4>
-                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--color-text-muted)' }}>Maks 2MB. {avatarFile && `Siap: ${avatarFile.name.substring(0, 15)}...`}</p>
+                  <h4 style={{ margin: '0', fontSize: '12px', fontWeight: 600 }}>Foto Profil</h4>
+                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--color-text-muted)' }}>{avatarFile ? `Siap: ${avatarFile.name}` : 'Maks 2MB'}</p>
                </div>
             </div>
 
