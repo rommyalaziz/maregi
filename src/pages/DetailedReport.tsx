@@ -32,12 +32,18 @@ const DetailedReport = () => {
               id: curr.id,
               name: curr.name,
               branch: curr.branch,
-              avatar_url: curr.avatar_url, // Masukkan URL foto di sini
+              avatar_url: null, // Initialize to null, will be resolved below
               rv: 0, up: 0, rd: 0, tp: 0, sg: 0, ppi: 0, val: 0, tpk: 0,
               lastValPeriode: '',
               monthlyHistory: {} // To store KPI per month
             };
           }
+
+          // Always prefer any valid avatar_url found in any period record
+          if (curr.avatar_url && curr.avatar_url.trim() !== '') {
+            acc[curr.id].avatar_url = curr.avatar_url;
+          }
+
           acc[curr.id].rv += curr.release_voucher || 0;
           acc[curr.id].up += curr.unapprove_pengajuan || 0;
           acc[curr.id].rd += curr.recalculate_delinquency || 0;
@@ -75,11 +81,6 @@ const DetailedReport = () => {
           
           const monthKpi = p_rv + p_up + p_rd + p_tp + p_sg + p_ppi + p_val + p_tpk;
           acc[curr.id].monthlyHistory[curr.periode] = monthKpi;
-
-          // Sync avatar_url across all records for this staff
-          if (!acc[curr.id].avatar_url && curr.avatar_url) {
-            acc[curr.id].avatar_url = curr.avatar_url;
-          }
 
           return acc;
         }, {});

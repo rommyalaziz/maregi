@@ -143,7 +143,6 @@ const AdminStaffUpdate = () => {
 
       // 1. Handle File Upload if there's a new file
       if (avatarFile) {
-        try {
           const fileExt = avatarFile.name.split('.').pop();
           const fileName = `${selectedStaffId}_${Date.now()}.${fileExt}`;
           const filePath = `avatars/${fileName}`;
@@ -165,9 +164,6 @@ const AdminStaffUpdate = () => {
             .getPublicUrl(filePath);
           
           avatar_url = publicUrl;
-        } catch (storageErr: any) {
-          throw storageErr;
-        }
       }
       
       const payload = {
@@ -181,13 +177,12 @@ const AdminStaffUpdate = () => {
 
       console.log('Sending payload:', payload);
 
-      // Try UPDATE first
-      const { data: updateData, error: updateError } = await supabase
+      // Update process
+      await supabase
         .from('staff_progress')
         .update(payload)
         .eq('id', selectedStaffId)
-        .eq('periode', selectedPeriode)
-        .select();
+        .eq('periode', selectedPeriode);
 
       // Post-save: If an avatar was uploaded, sync it to ALL months for this staff
       if (avatar_url) {
