@@ -13,6 +13,7 @@ interface MdisgoBranch {
   branch_name: string;
   training_date: string | null;
   members_accessed: number;
+  total_members: number;
   status: string;
 }
 
@@ -30,6 +31,7 @@ const MdisgoMonitoring = () => {
     branch_name: '',
     training_date: '',
     members_accessed: 0,
+    total_members: 0,
     status: 'Belum'
   });
   const [saving, setSaving] = useState(false);
@@ -94,7 +96,7 @@ const MdisgoMonitoring = () => {
   // Modal handlers
   const openAddModal = () => {
     setEditingItem(null);
-    setFormData({ branch_code: '', branch_name: '', training_date: '', members_accessed: 0, status: 'Belum' });
+    setFormData({ branch_code: '', branch_name: '', training_date: '', members_accessed: 0, total_members: 0, status: 'Belum' });
     setShowModal(true);
   };
 
@@ -105,6 +107,7 @@ const MdisgoMonitoring = () => {
       branch_name: item.branch_name,
       training_date: item.training_date || '',
       members_accessed: item.members_accessed,
+      total_members: item.total_members || 0,
       status: item.status
     });
     setShowModal(true);
@@ -128,6 +131,7 @@ const MdisgoMonitoring = () => {
         branch_name: formData.branch_name,
         training_date: formData.training_date || null,
         members_accessed: formData.members_accessed,
+        total_members: formData.total_members,
         status: formData.status
       };
 
@@ -289,13 +293,15 @@ const MdisgoMonitoring = () => {
             <table className="mdisgo-table">
               <thead>
                 <tr>
-                  <th style={{ width: '40px', textAlign: 'center' }}>No</th>
-                  <th style={{ width: '60px', textAlign: 'center' }}>Kode</th>
+                  <th style={{ width: '30px', textAlign: 'center' }}>No</th>
+                  <th style={{ width: '50px', textAlign: 'center' }}>Kode</th>
                   <th>Nama Cabang</th>
                   <th>Tanggal Training</th>
-                  <th style={{ textAlign: 'center' }}>Akses Anggota</th>
+                  <th style={{ textAlign: 'center' }}>Member</th>
+                  <th style={{ textAlign: 'center' }}>Anggota Akses</th>
+                  <th style={{ textAlign: 'center' }}>Presentase</th>
                   <th style={{ textAlign: 'center' }}>Status</th>
-                  {isAdmin && <th style={{ width: '70px', textAlign: 'center' }}>Aksi</th>}
+                  {isAdmin && <th style={{ width: '60px', textAlign: 'center' }}>Aksi</th>}
                 </tr>
               </thead>
               <tbody>
@@ -313,9 +319,19 @@ const MdisgoMonitoring = () => {
                     <td>
                       <span className="mdisgo-date">{formatDate(branch.training_date)}</span>
                     </td>
-                    <td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="mdisgo-members">
+                        {branch.total_members ? branch.total_members.toLocaleString('id-ID') : '-'}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
                       <div className="mdisgo-members">
                         {branch.status === 'Belum' ? '-' : branch.members_accessed.toLocaleString('id-ID')}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="mdisgo-percentage">
+                        {branch.status === 'Belum' || !branch.total_members ? '-' : `${((branch.members_accessed / branch.total_members) * 100).toFixed(1)}%`}
                       </div>
                     </td>
                     <td style={{ textAlign: 'center' }}>
@@ -394,6 +410,15 @@ const MdisgoMonitoring = () => {
                     type="date"
                     value={formData.training_date}
                     onChange={(e) => setFormData(prev => ({ ...prev, training_date: e.target.value }))}
+                  />
+                </div>
+                <div className="mdisgo-form-group">
+                  <label>Total Member Cabang</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.total_members}
+                    onChange={(e) => setFormData(prev => ({ ...prev, total_members: parseInt(e.target.value) || 0 }))}
                   />
                 </div>
                 <div className="mdisgo-form-group">

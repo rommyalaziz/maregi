@@ -166,12 +166,12 @@
 
 .mdisgo-table th,
 .mdisgo-table td {
-  padding: 4px 8px; /* Extremely compact padding */
+  padding: 2px 4px; /* Ultra compact padding */
   border-bottom: 1px solid #F3F4F6; /* Subtle row dividers */
-  font-size: 11px; /* Smaller base font */
+  font-size: 10.5px; /* Smaller base font */
   white-space: nowrap;
   vertical-align: middle;
-  height: 28px; /* Fixed minimal row height */
+  height: 22px; /* Fixed minimal row height */
 }
 
 .mdisgo-table th {
@@ -180,11 +180,12 @@
   z-index: 10;
   background-color: #F9FAFB;
   font-weight: 600;
-  font-size: 9px;
+  font-size: 8.5px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
+  padding: 4px 4px;
 }
 
 .mdisgo-table tbody tr {
