@@ -255,10 +255,10 @@ const StaffProgress = () => {
                   const statusConfig = getStatusConfig(staff.status);
                   return (
                     <tr key={staff.id}>
-                      <td className="center-text mono text-muted">{index + 1}</td>
-                      <td className="center-text mono">{staff.id}</td>
-                      <td className="fw-500">{staff.branch}</td>
-                      <td style={{ width: '40px', paddingRight: 0 }}>
+                      <td className="center-text mono text-muted" data-label="No">{index + 1}</td>
+                      <td className="center-text mono" data-label="Kode">{staff.id}</td>
+                      <td className="fw-500" data-label="Cabang">{staff.branch}</td>
+                      <td style={{ width: '40px', paddingRight: 0 }} className="desktop-only">
                         <div className="table-avatar">
                           <img 
                             src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=random&color=fff&bold=true`} 
@@ -266,18 +266,26 @@ const StaffProgress = () => {
                           />
                         </div>
                       </td>
-                      <td className="fw-600">
-                        <span>{staff.name}</span>
+                      <td className="fw-600" data-label="Nama Staf">
+                        <div className="name-cell-wrapper">
+                          <div className="table-avatar mobile-only">
+                            <img 
+                              src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=random&color=fff&bold=true`} 
+                              alt={staff.name} 
+                            />
+                          </div>
+                          <span>{staff.name}</span>
+                        </div>
                       </td>
-                      <td className="center-text mono">{staff.release_voucher === 0 ? '-' : staff.release_voucher}</td>
-                      <td className="center-text mono">{staff.unapprove_pengajuan === 0 ? '-' : staff.unapprove_pengajuan}</td>
-                      <td className="center-text mono">{staff.recalculate_delinquency === 0 ? '-' : staff.recalculate_delinquency}</td>
-                      <td className="center-text mono">{staff.transfer_pencairan === 0 ? '-' : staff.transfer_pencairan}</td>
-                      <td className="center-text mono">{staff.salah_generate === 0 ? '-' : staff.salah_generate}</td>
-                      <td className="center-text mono">{staff.ppi_not_entry === 0 ? '-' : staff.ppi_not_entry}</td>
-                      <td className="center-text mono">{staff.validasi === 0 ? '-' : staff.validasi}</td>
-                      <td className="center-text mono">{staff.tiket_perbaikan === 0 ? '-' : staff.tiket_perbaikan}</td>
-                      <td>
+                      <td className="center-text mono" data-label="Release Voucher">{staff.release_voucher === 0 ? '-' : staff.release_voucher}</td>
+                      <td className="center-text mono" data-label="Unapprove Pengajuan">{staff.unapprove_pengajuan === 0 ? '-' : staff.unapprove_pengajuan}</td>
+                      <td className="center-text mono" data-label="Recalculate Delinquency">{staff.recalculate_delinquency === 0 ? '-' : staff.recalculate_delinquency}</td>
+                      <td className="center-text mono" data-label="Transfer Pencairan">{staff.transfer_pencairan === 0 ? '-' : staff.transfer_pencairan}</td>
+                      <td className="center-text mono" data-label="Salah Generate">{staff.salah_generate === 0 ? '-' : staff.salah_generate}</td>
+                      <td className="center-text mono" data-label="PPI Not Entry">{staff.ppi_not_entry === 0 ? '-' : staff.ppi_not_entry}</td>
+                      <td className="center-text mono" data-label="Validasi">{staff.validasi === 0 ? '-' : staff.validasi}</td>
+                      <td className="center-text mono" data-label="Tiket Perbaikan">{staff.tiket_perbaikan === 0 ? '-' : staff.tiket_perbaikan}</td>
+                      <td data-label="Point">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div style={{ flex: 1 }}>
                             <ProgressBar 
@@ -290,12 +298,12 @@ const StaffProgress = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="center-text">
+                      <td className="center-text" data-label="Status">
                         <Badge variant={statusConfig.variant}>
                           {statusConfig.label}
                         </Badge>
                       </td>
-                      <td className="center-text">
+                      <td className="center-text" data-label="Aksi">
                         <button className="icon-btn" title="Lihat Poin Detail" onClick={() => openDrawer(staff)}>
                           <Eye size={12} />
                         </button>

@@ -236,10 +236,10 @@ const DetailedReport = () => {
                   .filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.branch.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map((staff, index) => (
                   <tr key={staff.id}>
-                    <td className="center-text mono text-muted">{index + 1}</td>
-                    <td className="center-text mono">{staff.id}</td>
-                    <td className="fw-500">{staff.branch}</td>
-                    <td style={{ width: '40px', paddingRight: 0 }}>
+                    <td className="center-text mono text-muted" data-label="No">{index + 1}</td>
+                    <td className="center-text mono" data-label="Kode">{staff.id}</td>
+                    <td className="fw-500" data-label="Cabang">{staff.branch}</td>
+                    <td style={{ width: '40px', paddingRight: 0 }} className="desktop-only">
                       <div className="table-avatar">
                         <img 
                           src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=random&color=fff&bold=true`} 
@@ -247,17 +247,27 @@ const DetailedReport = () => {
                         />
                       </div>
                     </td>
-                    <td className="fw-600">{staff.name}</td>
-                    <td className="center-text mono">{staff.rv || '-'}</td>
-                    <td className="center-text mono">{staff.up || '-'}</td>
-                    <td className="center-text mono">{staff.rd || '-'}</td>
-                    <td className="center-text mono">{staff.tp || '-'}</td>
-                    <td className="center-text mono">{staff.sg || '-'}</td>
-                    <td className="center-text mono">{staff.ppi || '-'}</td>
-                    <td className="center-text mono">{staff.val || '-'}</td>
-                    <td className="center-text mono">{staff.tpk || '-'}</td>
-                    <td className="center-text" style={{ padding: '4px 12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <td className="fw-600" data-label="Nama Staf">
+                      <div className="name-cell-wrapper">
+                        <div className="table-avatar mobile-only">
+                          <img 
+                            src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=random&color=fff&bold=true`} 
+                            alt={staff.name} 
+                          />
+                        </div>
+                        <span>{staff.name}</span>
+                      </div>
+                    </td>
+                    <td className="center-text mono" data-label="Release Voucher">{staff.rv || '-'}</td>
+                    <td className="center-text mono" data-label="Unapprove Pengajuan">{staff.up || '-'}</td>
+                    <td className="center-text mono" data-label="Recalculate Delinquency">{staff.rd || '-'}</td>
+                    <td className="center-text mono" data-label="Transfer Pencairan">{staff.tp || '-'}</td>
+                    <td className="center-text mono" data-label="Salah Generate">{staff.sg || '-'}</td>
+                    <td className="center-text mono" data-label="PPI Not Entry">{staff.ppi || '-'}</td>
+                    <td className="center-text mono" data-label="Validasi">{staff.val || '-'}</td>
+                    <td className="center-text mono" data-label="Tiket Perbaikan">{staff.tpk || '-'}</td>
+                    <td className="center-text" data-label="Progres Tren" style={{ padding: '4px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'flex-end' }}>
                          <div style={{ width: '60px', height: '28px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                               <LineChart data={staff.trendData}>
@@ -280,9 +290,9 @@ const DetailedReport = () => {
                          </div>
                       </div>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ flex: 1 }}>
+                    <td data-label="Point (%)">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                        <div style={{ flex: 1, minWidth: '40px' }}>
                           <ProgressBar progress={staff.totalKPI} color={staff.kpiColor} />
                         </div>
                         <span className="mono fw-600" style={{ fontSize: '12px', color: staff.kpiColor }}>{staff.totalKPI}%</span>

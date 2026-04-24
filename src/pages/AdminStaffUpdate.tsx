@@ -253,15 +253,22 @@ const AdminStaffUpdate = () => {
         </div>
       </div>
 
-      <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+      <div className="admin-update-content" style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
         <Card style={{ padding: '16px' }}>
           {/* SELECTORS ROW */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
+          <div className="selectors-row" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '12px', 
+            marginBottom: '12px', 
+            borderBottom: '1px solid var(--color-border)', 
+            paddingBottom: '12px' 
+          }}>
             <div className="form-group">
               <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Periode</label>
               <select 
                 className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '36px', fontSize: '13px' }}
+                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
                 value={selectedPeriode}
                 onChange={(e) => setSelectedPeriode(e.target.value)}
               >
@@ -275,7 +282,7 @@ const AdminStaffUpdate = () => {
               <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Pilih Staf</label>
               <select 
                 className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '36px', fontSize: '13px' }}
+                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
                 value={selectedStaffId}
                 onChange={(e) => setSelectedStaffId(e.target.value)}
               >
@@ -287,10 +294,10 @@ const AdminStaffUpdate = () => {
           </div>
 
           <form onSubmit={handleUpdate}>
-            {/* COMPACT AVATAR SECTION - Slimmed down further */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '6px 10px', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-               <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '1px solid white' }}>
+            {/* COMPACT AVATAR SECTION */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '12px', background: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+               <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid white', boxShadow: 'var(--shadow-sm)' }}>
                     <img 
                       src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffList.find(s => s.id === selectedStaffId)?.name || 'Staf')}&background=random&color=fff&bold=true`} 
                       alt="Preview" 
@@ -300,43 +307,48 @@ const AdminStaffUpdate = () => {
                   <button 
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                   >
-                    <ImagePlus size={10} />
+                    <ImagePlus size={12} />
                   </button>
                   <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
                </div>
                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0', fontSize: '12px', fontWeight: 600 }}>Foto Profil</h4>
-                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--color-text-muted)' }}>{avatarFile ? `Siap: ${avatarFile.name}` : 'Maks 2MB'}</p>
+                  <h4 style={{ margin: '0', fontSize: '14px', fontWeight: 600 }}>Foto Profil Staf</h4>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-muted)' }}>{avatarFile ? `Siap unggah: ${avatarFile.name}` : 'Ketuk ikon untuk mengubah foto'}</p>
                </div>
             </div>
 
-            {/* ERROR/SUCCESS MESSAGE - Compact */}
+            {/* ERROR/SUCCESS MESSAGE */}
             {message.text && (
               <div style={{ 
-                padding: '8px 12px', borderRadius: '6px', marginBottom: '12px',
+                padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: '16px',
                 backgroundColor: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
                 color: message.type === 'success' ? '#065F46' : '#991B1B',
-                fontSize: '12px', border: `1px solid ${message.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
-                display: 'flex', alignItems: 'center', gap: '6px'
+                fontSize: '13px', border: `1px solid ${message.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
+                display: 'flex', alignItems: 'center', gap: '8px'
               }}>
-                <Save size={14} />
+                <Save size={16} />
                 {message.text}
               </div>
             )}
 
-            {/* COMPACT CATEGORIES GRID */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+            {/* CATEGORIES GRID - Fully Responsive */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', 
+              gap: '12px', 
+              marginBottom: '20px' 
+            }}>
               {categories.map(c => (
                 <div key={c.id} className="form-group">
-                  <label style={{ display: 'block', marginBottom: '3px', fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {c.name.split(' ').length > 2 ? c.name.split(' ')[0] + ' ' + c.name.split(' ')[1] : c.name}
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em' }}>
+                    {c.name}
                   </label>
                   <input 
                     type="number" 
                     className="btn btn-outline w-full" 
-                    style={{ textAlign: 'left', padding: '6px 10px', fontSize: '13px', fontWeight: '700', height: '36px' }}
+                    style={{ textAlign: 'left', padding: '10px 14px', fontSize: '15px', fontWeight: '700', height: '44px' }}
                     value={(formData as any)[c.id]}
                     onChange={(e) => handleInputChange(c.id, e.target.value)}
                     min="0"
@@ -345,20 +357,21 @@ const AdminStaffUpdate = () => {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
-               <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 3, justifyContent: 'center', height: '38px', fontSize: '14px' }}>
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                <span style={{ marginLeft: '8px' }}>Simpan Update Profil & Poin</span>
+            <div className="admin-actions-row" style={{ display: 'flex', gap: '12px' }}>
+               <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 1, justifyContent: 'center', height: '48px', fontSize: '15px', fontWeight: 600 }}>
+                {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                <span style={{ marginLeft: '10px' }}>Simpan Perubahan</span>
               </button>
               
               <button 
                 type="button"
                 onClick={handleReset} 
                 className="btn btn-outline" 
-                style={{ flex: 1, color: '#CD1818', borderColor: '#FECACA', justifyContent: 'center', height: '38px', fontSize: '13px' }}
+                style={{ width: '48px', padding: 0, color: 'var(--color-danger)', borderColor: '#FECACA', justifyContent: 'center', height: '48px' }}
                 disabled={loading}
+                title="Reset Periode"
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={18} />
               </button>
             </div>
           </form>
