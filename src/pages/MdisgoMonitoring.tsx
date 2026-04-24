@@ -307,41 +307,41 @@ const MdisgoMonitoring = () => {
               <tbody>
                 {filteredData.map((branch, index) => (
                   <tr key={branch.id}>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="No">
                       <span className="mdisgo-row-num">{index + 1}</span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="Kode">
                       <span className="mdisgo-branch-code">{branch.branch_code}</span>
                     </td>
-                    <td>
+                    <td data-label="Nama Cabang">
                       <span className="mdisgo-branch-name">{branch.branch_name}</span>
                     </td>
-                    <td>
+                    <td data-label="Tanggal Training">
                       <span className="mdisgo-date">{formatDate(branch.training_date)}</span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="Member">
                       <div className="mdisgo-members">
                         {branch.total_members ? branch.total_members.toLocaleString('id-ID') : '-'}
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="Anggota Akses">
                       <div className="mdisgo-members">
                         {branch.status === 'Belum' ? '-' : branch.members_accessed.toLocaleString('id-ID')}
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="Presentase">
                       <div className="mdisgo-percentage">
                         {branch.status === 'Belum' || !branch.total_members ? '-' : `${((branch.members_accessed / branch.total_members) * 100).toFixed(1)}%`}
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: 'center' }} data-label="Status">
                       <span className={`mdisgo-status ${branch.status.toLowerCase()}`}>
                         <span className="mdisgo-status-dot"></span>
                         {branch.status}
                       </span>
                     </td>
                     {isAdmin && (
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }} data-label="Aksi">
                         <div className="mdisgo-action-buttons">
                           <button className="mdisgo-action-btn" title="Edit" onClick={() => openEditModal(branch)}>
                             <Pencil size={12} />

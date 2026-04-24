@@ -1,9 +1,9 @@
 :root {
-  /* Color Palette */
-  --color-primary: #A8E6CF; /* Soft light green */
-  --color-secondary: #2E7D61; /* Deep green */
-  --color-accent: #68B2A0; /* Muted teal / Mint */
-  --color-bg-main: #F3F4F6; /* Slightly darker cool grey for contrast */
+  /* Color Palette - Modern Corporate */
+  --color-primary: #0F766E; /* Teal 700 - Professional green/blue */
+  --color-secondary: #0D9488; /* Teal 600 */
+  --color-accent: #14B8A6; /* Teal 500 */
+  --color-bg-main: #F8FAFC; /* Soft light gray */
   --color-bg-card: #FFFFFF; /* Crisp white */
   --color-text-main: #1F2937; /* Darker grey for punchy typography */
   --color-text-muted: #6B7280; /* Light gray text */
@@ -11,6 +11,9 @@
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
+
+  /* Mobile Touch Targets */
+  --btn-min-height: 44px;
 
   /* Typography */
   --font-family: 'Inter', sans-serif;
@@ -97,6 +100,7 @@ ul {
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
+  min-height: var(--btn-min-height);
   border-radius: var(--radius-sm);
   font-weight: 500;
   font-size: 14px;
@@ -134,3 +138,24 @@ ul {
 .badge.on-track { background-color: #ECFDF5; color: #065F46; border-color: #A7F3D0; }
 .badge.delayed { background-color: #FFFBEB; color: #92400E; border-color: #FDE68A; }
 .badge.critical { background-color: #FEF2F2; color: #991B1B; border-color: #FECACA; }
+
+/* Responsive Utilities */
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: block !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block !important;
+  }
+  .mobile-only.flex {
+    display: flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+}

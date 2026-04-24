@@ -48,22 +48,22 @@ const BranchProgress = () => {
             <tbody>
               {branchesData.map(branch => (
                 <tr key={branch.id}>
-                  <td className="mono">{branch.id}</td>
-                  <td className="fw-500">{branch.name}</td>
-                  <td>{branch.region}</td>
-                  <td>{branch.manager}</td>
-                  <td style={{ width: '220px' }}>
+                  <td className="mono" data-label="ID Cabang">{branch.id}</td>
+                  <td className="fw-500" data-label="Nama">{branch.name}</td>
+                  <td data-label="Wilayah">{branch.region}</td>
+                  <td data-label="Manajer">{branch.manager}</td>
+                  <td style={{ width: '220px' }} data-label="Target Progres">
                     <ProgressBar 
                       progress={branch.progress} 
                       color={branch.status === 'on-track' ? 'var(--color-secondary)' : branch.status === 'delayed' ? 'var(--color-warning)' : 'var(--color-danger)'}
                     />
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <Badge variant={branch.status as BadgeVariant}>
                       {branch.status === 'on-track' ? 'On Track' : branch.status === 'delayed' ? 'Delayed' : 'Critical'}
                     </Badge>
                   </td>
-                  <td>
+                  <td data-label="Aksi">
                     <button className="icon-btn" title="Lihat Detail" onClick={() => openDrawer(branch)}>
                       <Eye size={12} />
                     </button>

@@ -83,3 +83,9 @@
 .nav-item.logout:hover {
   background-color: #FEF2F2;
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
+  }
+}

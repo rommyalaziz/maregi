@@ -153,3 +153,25 @@
   align-items: center;
   height: 300px;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .visual-dashboard {
+    padding: 16px;
+  }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .visual-grid {
+    grid-template-columns: 1fr;
+  }
+  .glass-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+}

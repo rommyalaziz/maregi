@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import BottomNav from '../components/BottomNav';
 import './MainLayout.css';
 
 const MainLayout = () => {
@@ -35,6 +36,7 @@ const MainLayout = () => {
           <Outlet />
         </main>
       </div>
+      <BottomNav />
     </div>
   );
 };

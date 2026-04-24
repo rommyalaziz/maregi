@@ -459,4 +459,88 @@
   .mdisgo-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .mdisgo-header { flex-direction: column; align-items: flex-start; gap: 8px; }
   .mdisgo-header-titles { flex-direction: column; gap: 2px; }
+
+  /* Table to Card List */
+  .mdisgo-table-wrapper {
+    max-height: none;
+    overflow-y: visible;
+  }
+  
+  .mdisgo-table, .mdisgo-table tbody, .mdisgo-table tr, .mdisgo-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .mdisgo-table thead {
+    display: none;
+  }
+  
+  .mdisgo-table tr {
+    margin-bottom: 12px;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .mdisgo-table td {
+    display: flex !important; /* Override inline styles */
+    justify-content: space-between !important;
+    align-items: center;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: right !important;
+    height: auto;
+  }
+  
+  .mdisgo-table td:last-child {
+    border-bottom: none;
+  }
+  
+  .mdisgo-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-align: left;
+    margin-right: 12px;
+  }
+
+  .mdisgo-action-buttons {
+    opacity: 1; /* Always show actions on mobile */
+  }
+  .mdisgo-action-btn {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  /* Bottom Sheet Modal */
+  .mdisgo-modal-overlay {
+    align-items: flex-end; /* Align to bottom */
+  }
+
+  .mdisgo-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0; /* Rounded top corners */
+    animation: slideUp 0.3s ease-out forwards;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mdisgo-form-row {
+    grid-template-columns: 1fr; /* Stack form fields */
+  }
+  
+  .mdisgo-form-group input,
+  .mdisgo-form-group select {
+    min-height: 44px; /* Touch target */
+    font-size: 14px;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
