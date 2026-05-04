@@ -254,133 +254,147 @@ const AdminStaffUpdate = () => {
   }
 
   return (
-    <div className="page-container" style={{ padding: '10px 20px' }}>
-      <div className="page-header" style={{ marginBottom: '12px' }}>
+    <div className="page-container" style={{ padding: '16px 20px' }}>
+      <div className="page-header" style={{ marginBottom: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '18px', marginBottom: '2px' }}>Manajemen Staf & Poin</h1>
-          <p style={{ fontSize: '11px' }}>Kelola profil dan total kesalahan secara absolut.</p>
+          <h1 style={{ fontSize: '18px', marginBottom: '4px' }}>Update Kesalahan Staf</h1>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Panel entri cepat untuk manajemen performa dan poin absolut staf.</p>
         </div>
       </div>
 
-      <div className="admin-update-content" style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
-        <Card style={{ padding: '16px' }}>
-          {/* SELECTORS ROW */}
-          <div className="selectors-row" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-            gap: '12px', 
-            marginBottom: '12px', 
+      <div className="admin-update-content" style={{ maxWidth: '850px', margin: '0 auto', width: '100%' }}>
+        <Card style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
+          
+          {/* HEADER SECTON: Avatar + Selectors in one row */}
+          <div style={{ 
+            padding: '16px', 
+            background: 'var(--color-bg-alt)', 
             borderBottom: '1px solid var(--color-border)', 
-            paddingBottom: '12px' 
+            display: 'flex', 
+            gap: '20px', 
+            alignItems: 'center', 
+            flexWrap: 'wrap' 
           }}>
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Tahun</label>
-              <select 
-                className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
-                value={selectedTahun}
-                onChange={(e) => setSelectedTahun(e.target.value)}
+            
+            {/* Avatar Badge */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid white', boxShadow: '0 2px 5px rgba(0,0,0,0.08)', background: '#e2e8f0' }}>
+                <img 
+                  src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffList.find(s => s.id === selectedStaffId)?.name || 'Staf')}&background=random&color=fff&bold=true`} 
+                  alt="Staf" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--color-primary)', color: 'white', border: '2px solid white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}
+                title="Ubah Foto"
               >
-                <option value="2025">2025</option>
-                <option value="2026">2026</option>
-                <option value="2027">2027</option>
-              </select>
+                <ImagePlus size={12} />
+              </button>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
             </div>
 
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Periode (Bulan)</label>
-              <select 
-                className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
-                value={selectedPeriode}
-                onChange={(e) => setSelectedPeriode(e.target.value)}
-              >
-                <option value="Januari">Januari</option>
-                <option value="Februari">Februari</option>
-                <option value="Maret">Maret</option>
-                <option value="April">April</option>
-                <option value="Mei">Mei</option>
-                <option value="Juni">Juni</option>
-                <option value="Juli">Juli</option>
-                <option value="Agustus">Agustus</option>
-                <option value="September">September</option>
-                <option value="Oktober">Oktober</option>
-                <option value="November">November</option>
-                <option value="Desember">Desember</option>
-              </select>
-            </div>
+            {/* Selectors */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pilih Staf</label>
+                <select 
+                  className="btn btn-outline w-full" 
+                  style={{ height: '36px', padding: '0 10px', fontSize: '13px', background: 'white' }}
+                  value={selectedStaffId}
+                  onChange={(e) => setSelectedStaffId(e.target.value)}
+                >
+                  {staffList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Pilih Staf</label>
-              <select 
-                className="btn btn-outline w-full" 
-                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
-                value={selectedStaffId}
-                onChange={(e) => setSelectedStaffId(e.target.value)}
-              >
-                {staffList.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tahun</label>
+                <select 
+                  className="btn btn-outline w-full" 
+                  style={{ height: '36px', padding: '0 10px', fontSize: '13px', background: 'white' }}
+                  value={selectedTahun}
+                  onChange={(e) => setSelectedTahun(e.target.value)}
+                >
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bulan</label>
+                <select 
+                  className="btn btn-outline w-full" 
+                  style={{ height: '36px', padding: '0 10px', fontSize: '13px', background: 'white' }}
+                  value={selectedPeriode}
+                  onChange={(e) => setSelectedPeriode(e.target.value)}
+                >
+                  {['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          <form onSubmit={handleUpdate}>
-            {/* COMPACT AVATAR SECTION */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '12px', background: 'var(--color-bg-main)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-               <div style={{ position: 'relative', width: '48px', height: '48px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', background: '#e2e8f0', border: '2px solid white', boxShadow: 'var(--shadow-sm)' }}>
-                    <img 
-                      src={avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffList.find(s => s.id === selectedStaffId)?.name || 'Staf')}&background=random&color=fff&bold=true`} 
-                      alt="Preview" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  <button 
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                  >
-                    <ImagePlus size={12} />
-                  </button>
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} />
-               </div>
-               <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0', fontSize: '14px', fontWeight: 600 }}>Foto Profil Staf</h4>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--color-text-muted)' }}>{avatarFile ? `Siap unggah: ${avatarFile.name}` : 'Ketuk ikon untuk mengubah foto'}</p>
-               </div>
-            </div>
-
-            {/* ERROR/SUCCESS MESSAGE */}
+          <form onSubmit={handleUpdate} style={{ padding: '20px' }}>
+            
+            {/* SUCCESS/ERROR MESSAGE */}
             {message.text && (
               <div style={{ 
-                padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: '16px',
+                padding: '10px 14px', borderRadius: '6px', marginBottom: '16px',
                 backgroundColor: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
                 color: message.type === 'success' ? '#065F46' : '#991B1B',
                 fontSize: '13px', border: `1px solid ${message.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
-                display: 'flex', alignItems: 'center', gap: '8px'
+                display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500
               }}>
                 <Save size={16} />
                 {message.text}
               </div>
             )}
 
-            {/* CATEGORIES GRID - Fully Responsive */}
+            {/* COMPACT 3-COLUMN GRID */}
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
               gap: '12px', 
-              marginBottom: '20px' 
+              marginBottom: '24px' 
             }}>
               {categories.map(c => (
-                <div key={c.id} className="form-group">
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em' }}>
+                <div 
+                  key={c.id} 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between', 
+                    background: 'var(--color-bg-alt)', 
+                    padding: '8px 12px', 
+                    borderRadius: '6px', 
+                    border: '1px solid var(--color-border)',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
+                >
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text)', textTransform: 'uppercase', letterSpacing: '0.025em', maxWidth: '140px', lineHeight: '1.3' }}>
                     {c.name}
                   </label>
                   <input 
                     type="number" 
-                    className="btn btn-outline w-full" 
-                    style={{ textAlign: 'left', padding: '10px 14px', fontSize: '15px', fontWeight: '700', height: '44px' }}
+                    className="btn btn-outline" 
+                    style={{ 
+                      width: '64px', 
+                      height: '32px', 
+                      textAlign: 'center', 
+                      fontSize: '15px', 
+                      fontWeight: '700', 
+                      padding: '0',
+                      background: 'white',
+                      color: 'var(--color-text)'
+                    }}
                     value={(formData as any)[c.id]}
                     onChange={(e) => handleInputChange(c.id, e.target.value)}
                     min="0"
@@ -389,21 +403,27 @@ const AdminStaffUpdate = () => {
               ))}
             </div>
 
-            <div className="admin-actions-row" style={{ display: 'flex', gap: '12px' }}>
-               <button type="submit" className="btn btn-primary" disabled={loading} style={{ flex: 1, justifyContent: 'center', height: '48px', fontSize: '15px', fontWeight: 600 }}>
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                <span style={{ marginLeft: '10px' }}>Simpan Perubahan</span>
+            {/* ACTIONS ROW */}
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={loading} 
+                style={{ flex: 1, justifyContent: 'center', height: '42px', fontSize: '14px', fontWeight: 600, letterSpacing: '0.025em' }}
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                <span style={{ marginLeft: '8px' }}>Simpan Perubahan</span>
               </button>
               
               <button 
                 type="button"
                 onClick={handleReset} 
                 className="btn btn-outline" 
-                style={{ width: '48px', padding: 0, color: 'var(--color-danger)', borderColor: '#FECACA', justifyContent: 'center', height: '48px' }}
+                style={{ width: '42px', padding: 0, color: '#dc2626', borderColor: '#fca5a5', background: '#fef2f2', justifyContent: 'center', height: '42px' }}
                 disabled={loading}
-                title="Reset Periode"
+                title="Reset Periode Ini"
               >
-                <RotateCcw size={18} />
+                <RotateCcw size={16} />
               </button>
             </div>
           </form>
