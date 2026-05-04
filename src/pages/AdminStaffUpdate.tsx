@@ -89,6 +89,16 @@ const AdminStaffUpdate = () => {
 
         if (error && error.code !== 'PGRST116') throw error;
 
+        // Fetch avatar independently to ensure it persists across months
+        const { data: avatarData } = await supabase
+          .from('staff_progress')
+          .select('avatar_url')
+          .eq('id', selectedStaffId)
+          .not('avatar_url', 'is', null)
+          .limit(1);
+          
+        const persistentAvatar = avatarData && avatarData.length > 0 ? avatarData[0].avatar_url : null;
+
         if (data) {
           setFormData({
             release_voucher: data.release_voucher || 0,
@@ -101,14 +111,14 @@ const AdminStaffUpdate = () => {
             tiket_perbaikan: data.tiket_perbaikan || 0,
             lain_lain: data.lain_lain || 0
           });
-          setAvatarPreview(data.avatar_url || null);
+          setAvatarPreview(data.avatar_url || persistentAvatar);
         } else {
           setFormData({
             release_voucher: 0, unapprove_pengajuan: 0, recalculate_delinquency: 0,
             transfer_pencairan: 0, salah_generate: 0, ppi_not_entry: 0,
             validasi: 0, tiket_perbaikan: 0, lain_lain: 0
           });
-          setAvatarPreview(null);
+          setAvatarPreview(persistentAvatar);
         }
         setAvatarFile(null); // Reset pending file
       } catch (err) {
