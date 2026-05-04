@@ -194,13 +194,29 @@ const AdminStaffUpdate = () => {
 
       console.log('Sending payload:', payload);
 
-      // Update process
-      await supabase
+      // Update or Insert process
+      const { data: existingRecord } = await supabase
         .from('staff_progress')
-        .update(payload)
+        .select('id')
         .eq('id', selectedStaffId)
         .eq('periode', selectedPeriode)
-        .eq('tahun', parseInt(selectedTahun));
+        .eq('tahun', parseInt(selectedTahun))
+        .single();
+
+      if (existingRecord) {
+        const { error: updateError } = await supabase
+          .from('staff_progress')
+          .update(payload)
+          .eq('id', selectedStaffId)
+          .eq('periode', selectedPeriode)
+          .eq('tahun', parseInt(selectedTahun));
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('staff_progress')
+          .insert([payload]);
+        if (insertError) throw insertError;
+      }
 
       // Post-save: If an avatar was uploaded, sync it to ALL months for this staff
       if (avatar_url) {
