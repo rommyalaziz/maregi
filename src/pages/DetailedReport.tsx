@@ -82,7 +82,7 @@ const DetailedReport = () => {
           const p_up  = calcPts(curr.unapprove_pengajuan || 0,      [{min:0,max:0,pts:10},{min:1,max:1,pts:7},{min:2,max:3,pts:5},{min:4,max:5,pts:3},{min:6,max:7,pts:2},{min:8,max:10,pts:1},{min:11,max:999,pts:0}]);
           const p_rd  = calcPts(curr.recalculate_delinquency || 0,  [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:4},{min:8,max:10,pts:3},{min:11,max:13,pts:1},{min:14,max:999,pts:0}]);
           const p_tp  = calcPts(curr.transfer_pencairan || 0,        [{min:0,max:0,pts:15},{min:1,max:1,pts:10},{min:2,max:3,pts:5},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
-          const p_sg  = calcPts(curr.salah_generate || 0,            [{min:0,max:0,pts:10},{min:1,max:1,pts:11},{min:2,max:3,pts:9},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:999,pts:0}]);
+          const p_sg  = calcPts(curr.salah_generate || 0,            [{min:0,max:0,pts:10},{min:1,max:1,pts:9},{min:2,max:3,pts:7},{min:4,max:5,pts:5},{min:6,max:7,pts:3},{min:8,max:999,pts:0}]);
           const p_ppi = calcPts(curr.ppi_not_entry || 0,             [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:10,pts:5},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
           const p_val = calcPts(curr.validasi || 0,                  [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:5},{min:8,max:10,pts:4},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
           const p_tpk = calcPts(curr.tiket_perbaikan || 0,           [{min:0,max:0,pts:15},{min:1,max:1,pts:5},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
@@ -107,7 +107,7 @@ const DetailedReport = () => {
           const p_up  = calcPts(s.up,  [{min:0,max:0,pts:10},{min:1,max:1,pts:7},{min:2,max:3,pts:5},{min:4,max:5,pts:3},{min:6,max:7,pts:2},{min:8,max:10,pts:1},{min:11,max:999,pts:0}]);
           const p_rd  = calcPts(s.rd,  [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:4},{min:8,max:10,pts:3},{min:11,max:13,pts:1},{min:14,max:999,pts:0}]);
           const p_tp  = calcPts(s.tp,  [{min:0,max:0,pts:15},{min:1,max:1,pts:10},{min:2,max:3,pts:5},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
-          const p_sg  = calcPts(s.sg,  [{min:0,max:0,pts:10},{min:1,max:1,pts:11},{min:2,max:3,pts:9},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:999,pts:0}]);
+          const p_sg  = calcPts(s.sg,  [{min:0,max:0,pts:10},{min:1,max:1,pts:9},{min:2,max:3,pts:7},{min:4,max:5,pts:5},{min:6,max:7,pts:3},{min:8,max:999,pts:0}]);
           const p_ppi = calcPts(s.ppi, [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:7},{min:6,max:7,pts:5},{min:8,max:10,pts:5},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
           const p_val = calcPts(s.val, [{min:0,max:0,pts:10},{min:1,max:1,pts:8},{min:2,max:3,pts:7},{min:4,max:5,pts:6},{min:6,max:7,pts:5},{min:8,max:10,pts:4},{min:11,max:13,pts:3},{min:14,max:16,pts:2},{min:17,max:20,pts:1},{min:21,max:999,pts:0}]);
           const p_tpk = calcPts(s.tpk, [{min:0,max:0,pts:15},{min:1,max:1,pts:5},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
