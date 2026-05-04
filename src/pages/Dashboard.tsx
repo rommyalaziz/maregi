@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { Trophy, AlertCircle, Users, ClipboardCheck, MessageSquare, TrendingUp } from 'lucide-react';
+import { Trophy, AlertCircle, Users, ClipboardCheck, MessageSquare, TrendingUp, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState('Semua');
+  const [selectedYear, setSelectedYear] = useState('Semua');
   const [summary, setSummary] = useState({
     avgKPI: 0,
     totalStaff: 0,
@@ -17,23 +19,31 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // Fetch dynamic KPI from VIEW for April
-      const { data: staff, error } = await supabase
+      
+      let query = supabase
         .from('v_staff_report')
-        .select('*')
-        .eq('periode', 'April');
+        .select('*');
+        
+      if (selectedMonth !== 'Semua') {
+        query = query.eq('periode', selectedMonth);
+      }
+      if (selectedYear !== 'Semua') {
+        query = query.eq('tahun', parseInt(selectedYear));
+      }
+
+      const { data: staff, error } = await query;
 
       if (error) throw error;
 
       if (staff) {
         const processedStaff = staff.map(s => {
           const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
-                           (s.p_sg || 0) + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0);
+                           (s.p_sg || 0) + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0) + (s.p_ll || 0);
           
           let status = 'critical';
           if (totalKPI >= 90) status = 'on-track';
@@ -74,9 +84,48 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Ringkasan Beranda</h1>
-        <p>Analisis pencapaian dan dukungan untuk progres staf regional.</p>
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1>Ringkasan Beranda</h1>
+          <p>Analisis pencapaian dan dukungan untuk progres staf regional.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+            <Filter size={14} color="#64748b" />
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(e.target.value)}
+              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#334155', cursor: 'pointer' }}
+            >
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="Semua">Semua Tahun</option>
+            </select>
+          </div>
+          <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+            <Filter size={14} color="#64748b" />
+            <select 
+              value={selectedMonth} 
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#334155', cursor: 'pointer' }}
+            >
+              <option value="Januari">Januari</option>
+              <option value="Februari">Februari</option>
+              <option value="Maret">Maret</option>
+              <option value="April">April</option>
+              <option value="Mei">Mei</option>
+              <option value="Juni">Juni</option>
+              <option value="Juli">Juli</option>
+              <option value="Agustus">Agustus</option>
+              <option value="September">September</option>
+              <option value="Oktober">Oktober</option>
+              <option value="November">November</option>
+              <option value="Desember">Desember</option>
+              <option value="Semua">Semua Bulan</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="highlights-grid">
