@@ -24,7 +24,8 @@ const AdminStaffUpdate = () => {
     salah_generate: 0,
     ppi_not_entry: 0,
     validasi: 0,
-    tiket_perbaikan: 0
+    tiket_perbaikan: 0,
+    lain_lain: 0
   });
 
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -38,6 +39,7 @@ const AdminStaffUpdate = () => {
     { id: 'ppi_not_entry', name: 'PPI Not Entry' },
     { id: 'validasi', name: 'Validasi' },
     { id: 'tiket_perbaikan', name: 'Tiket Perbaikan' },
+    { id: 'lain_lain', name: 'Lain-lain' },
   ];
 
   // 1. Fetch staff names for the dropdown
@@ -93,14 +95,15 @@ const AdminStaffUpdate = () => {
             salah_generate: data.salah_generate || 0,
             ppi_not_entry: data.ppi_not_entry || 0,
             validasi: data.validasi || 0,
-            tiket_perbaikan: data.tiket_perbaikan || 0
+            tiket_perbaikan: data.tiket_perbaikan || 0,
+            lain_lain: data.lain_lain || 0
           });
           setAvatarPreview(data.avatar_url || null);
         } else {
           setFormData({
             release_voucher: 0, unapprove_pengajuan: 0, recalculate_delinquency: 0,
             transfer_pencairan: 0, salah_generate: 0, ppi_not_entry: 0,
-            validasi: 0, tiket_perbaikan: 0
+            validasi: 0, tiket_perbaikan: 0, lain_lain: 0
           });
           setAvatarPreview(null);
         }
@@ -227,7 +230,7 @@ const AdminStaffUpdate = () => {
       setFormData({
         release_voucher: 0, unapprove_pengajuan: 0, recalculate_delinquency: 0,
         transfer_pencairan: 0, salah_generate: 0, ppi_not_entry: 0,
-        validasi: 0, tiket_perbaikan: 0
+        validasi: 0, tiket_perbaikan: 0, lain_lain: 0
       });
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Gagal meriset data' });
