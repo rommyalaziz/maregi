@@ -10,7 +10,7 @@ const DetailedReport = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedYear, setSelectedYear] = useState('Semua');
 
   useEffect(() => {
     fetchCumulativeData();

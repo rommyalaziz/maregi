@@ -11,8 +11,8 @@ const StaffProgress = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
-  const [selectedMonth, setSelectedMonth] = useState('Mei');
-  const [selectedYear, setSelectedYear] = useState('2026');
+  const [selectedMonth, setSelectedMonth] = useState('Semua');
+  const [selectedYear, setSelectedYear] = useState('Semua');
   const [cumulativeData, setCumulativeData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
