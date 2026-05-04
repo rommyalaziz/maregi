@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import {
   Search, Building2, Users, Plus, Pencil, Trash2,
-  X, Loader2, CheckCircle2, GraduationCap, Save, AlertTriangle
+  X, Loader2, CheckCircle2, GraduationCap, Save, AlertTriangle, Clock
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './MdisgoMonitoring.css';
@@ -22,6 +22,12 @@ const MdisgoMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Last updated info
+  const [lastUpdatedInfo, setLastUpdatedInfo] = useState('Belum ada informasi');
+  const [showUpdateInfoModal, setShowUpdateInfoModal] = useState(false);
+  const [updateInfoInput, setUpdateInfoInput] = useState('');
+  const [savingInfo, setSavingInfo] = useState(false);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -62,6 +68,23 @@ const MdisgoMonitoring = () => {
 
       if (error) throw error;
       setData(branches || []);
+
+      // Fetch last updated info
+      try {
+        const { data: settingData, error: settingError } = await supabase
+          .from('app_settings')
+          .select('value')
+          .eq('key', 'mdisgo_last_updated')
+          .single();
+        
+        if (!settingError && settingData) {
+          setLastUpdatedInfo(settingData.value);
+        }
+      } catch (err) {
+        // Silently fail if table doesn't exist yet
+        console.warn('Could not fetch app_settings, maybe table not created yet.');
+      }
+
     } catch (err) {
       console.error('Error fetching MDISGO data:', err);
     } finally {
@@ -175,6 +198,27 @@ const MdisgoMonitoring = () => {
     }
   };
 
+  const handleSaveUpdateInfo = async () => {
+    if (!updateInfoInput.trim()) return;
+    setSavingInfo(true);
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'mdisgo_last_updated', value: updateInfoInput, updated_at: new Date().toISOString() });
+      
+      if (error) throw error;
+      
+      setLastUpdatedInfo(updateInfoInput);
+      setMessage({ type: 'success', text: 'Informasi update data berhasil disimpan.' });
+      setShowUpdateInfoModal(false);
+    } catch (err: any) {
+      console.error('Error saving update info:', err);
+      setMessage({ type: 'error', text: err.message || 'Gagal menyimpan info update.' });
+    } finally {
+      setSavingInfo(false);
+    }
+  };
+
   // Filtered + alphabetically sorted
   const filteredData = data
     .filter(b =>
@@ -188,7 +232,25 @@ const MdisgoMonitoring = () => {
       {/* Header */}
       <div className="mdisgo-header">
         <div className="mdisgo-header-titles">
-          <h1>MDISGO</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <h1>MDISGO</h1>
+            <div className="mdisgo-update-badge">
+              <Clock size={12} />
+              <span>Update Data: <strong>{lastUpdatedInfo}</strong></span>
+              {isAdmin && (
+                <button 
+                  className="mdisgo-edit-info-btn" 
+                  onClick={() => {
+                    setUpdateInfoInput(lastUpdatedInfo);
+                    setShowUpdateInfoModal(true);
+                  }}
+                  title="Edit Info Update"
+                >
+                  <Pencil size={10} />
+                </button>
+              )}
+            </div>
+          </div>
           <span className="mdisgo-subtitle">Monitoring cabang yang telah mengikuti training MDISGO.</span>
         </div>
         <div className="mdisgo-header-actions">
@@ -440,6 +502,39 @@ const MdisgoMonitoring = () => {
               <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ fontSize: '12px', padding: '6px 14px' }}>
                 {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
                 <span>{editingItem ? 'Simpan' : 'Tambah'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Info Modal */}
+      {showUpdateInfoModal && (
+        <div className="mdisgo-modal-overlay" onClick={() => setShowUpdateInfoModal(false)}>
+          <div className="mdisgo-modal" style={{ maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="mdisgo-modal-header">
+              <h3>Edit Info Update Data</h3>
+              <button className="mdisgo-modal-close" onClick={() => setShowUpdateInfoModal(false)}><X size={16} /></button>
+            </div>
+            <div className="mdisgo-modal-body">
+              <div className="mdisgo-form-group">
+                <label>Informasi Update Data (contoh: 21 Apr 2026)</label>
+                <input
+                  type="text"
+                  placeholder="Masukkan informasi update..."
+                  value={updateInfoInput}
+                  onChange={(e) => setUpdateInfoInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="mdisgo-modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowUpdateInfoModal(false)} disabled={savingInfo} style={{ fontSize: '12px', padding: '6px 14px' }}>
+                Batal
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveUpdateInfo} disabled={savingInfo || !updateInfoInput.trim()} style={{ fontSize: '12px', padding: '6px 14px' }}>
+                {savingInfo ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
+                <span>Simpan</span>
               </button>
             </div>
           </div>
