@@ -11,13 +11,14 @@ const StaffProgress = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
-  const [selectedMonth, setSelectedMonth] = useState('April');
+  const [selectedMonth, setSelectedMonth] = useState('Mei');
+  const [selectedYear, setSelectedYear] = useState('2026');
   const [cumulativeData, setCumulativeData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchStaffData();
-  }, [selectedMonth]);
+  }, [selectedMonth, selectedYear]);
 
   const fetchStaffData = async () => {
     try {
@@ -29,6 +30,9 @@ const StaffProgress = () => {
       
       if (selectedMonth !== 'Semua') {
         query = query.eq('periode', selectedMonth);
+      }
+      if (selectedYear !== 'Semua') {
+        query = query.eq('tahun', parseInt(selectedYear));
       }
 
       const { data: staff, error } = await query;
@@ -80,15 +84,25 @@ const StaffProgress = () => {
     
     // Fetch cumulative data (sum across all months)
     try {
-      const { data: records, error } = await supabase
+      let drawerQuery = supabase
         .from('staff_progress')
         .select('*')
         .eq('id', staff.id);
+
+      if (selectedYear !== 'Semua') {
+        drawerQuery = drawerQuery.eq('tahun', parseInt(selectedYear));
+      }
+
+      const { data: records, error } = await drawerQuery;
       
       if (error) throw error;
 
       if (records) {
-        const periodRank: Record<string, number> = { 'April': 3, 'Maret': 2, 'Februari': 1 };
+        const periodRank: Record<string, number> = {
+          'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4,
+          'Mei': 5, 'Juni': 6, 'Juli': 7, 'Agustus': 8,
+          'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
+        };
         const sortedRecords = [...records].sort((a, b) => (periodRank[b.periode] || 0) - (periodRank[a.periode] || 0));
         const latestVal = sortedRecords[0]?.validasi || 0;
 
@@ -144,16 +158,38 @@ const StaffProgress = () => {
         </div>
         <div className="header-actions">
           <div className="filter-group">
+              <Filter size={16} />
+              <select 
+                className="month-select" 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="Semua">Semua Tahun</option>
+              </select>
+            </div>
+          <div className="filter-group">
             <Filter size={16} />
             <select 
               className="month-select" 
               value={selectedMonth} 
               onChange={(e) => setSelectedMonth(e.target.value)}
             >
-              <option value="April">April</option>
-              <option value="Maret">Maret</option>
+              <option value="Januari">Januari</option>
               <option value="Februari">Februari</option>
-              <option value="Semua">Semua Periode</option>
+              <option value="Maret">Maret</option>
+              <option value="April">April</option>
+              <option value="Mei">Mei</option>
+              <option value="Juni">Juni</option>
+              <option value="Juli">Juli</option>
+              <option value="Agustus">Agustus</option>
+              <option value="September">September</option>
+              <option value="Oktober">Oktober</option>
+              <option value="November">November</option>
+              <option value="Desember">Desember</option>
+              <option value="Semua">Semua Bulan</option>
             </select>
           </div>
           <div className="search-box">
@@ -343,7 +379,7 @@ const StaffProgress = () => {
             
             <div className="drawer-section">
               <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                Performa {selectedMonth === 'Semua' ? 'Total' : selectedMonth}
+                Akumulasi Kesalahan {selectedYear !== 'Semua' ? selectedYear : ''}
                 <Badge variant={getStatusConfig(selectedStaff.status).variant}>
                   {selectedStaff.totalKPI}%
                 </Badge>
@@ -359,7 +395,7 @@ const StaffProgress = () => {
 
             {cumulativeData && (
               <div className="drawer-section">
-                <h3>Akumulasi Kesalahan (Feb - Apr)</h3>
+                <h3>Akumulasi Kesalahan ({selectedMonth === 'Semua' ? 'Semua Bulan' : selectedMonth} {selectedYear !== 'Semua' ? selectedYear : 'Semua Tahun'})</h3>
                 <div className="cumulative-grid">
                   <div className="cum-item">
                     <span className="label">Release Voucher</span>

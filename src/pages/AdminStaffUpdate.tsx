@@ -8,7 +8,8 @@ const AdminStaffUpdate = () => {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [selectedStaffId, setSelectedStaffId] = useState('');
-  const [selectedPeriode, setSelectedPeriode] = useState('April');
+  const [selectedPeriode, setSelectedPeriode] = useState('Mei');
+  const [selectedTahun, setSelectedTahun] = useState('2026');
   
   // Avatar state
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -77,12 +78,14 @@ const AdminStaffUpdate = () => {
     const fetchCurrentValues = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        let q = supabase
           .from('staff_progress')
           .select('*')
           .eq('id', selectedStaffId)
           .eq('periode', selectedPeriode)
-          .single();
+          .eq('tahun', parseInt(selectedTahun));
+
+        const { data, error } = await q.single();
 
         if (error && error.code !== 'PGRST116') throw error;
 
@@ -116,7 +119,7 @@ const AdminStaffUpdate = () => {
     };
 
     fetchCurrentValues();
-  }, [selectedStaffId, selectedPeriode]);
+  }, [selectedStaffId, selectedPeriode, selectedTahun]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -172,6 +175,7 @@ const AdminStaffUpdate = () => {
       const payload = {
         id: selectedStaffId,
         periode: selectedPeriode,
+        tahun: parseInt(selectedTahun),
         name: staffInfo?.name,
         branch: staffInfo?.branch,
         avatar_url,
@@ -185,7 +189,8 @@ const AdminStaffUpdate = () => {
         .from('staff_progress')
         .update(payload)
         .eq('id', selectedStaffId)
-        .eq('periode', selectedPeriode);
+        .eq('periode', selectedPeriode)
+        .eq('tahun', parseInt(selectedTahun));
 
       // Post-save: If an avatar was uploaded, sync it to ALL months for this staff
       if (avatar_url) {
@@ -216,17 +221,18 @@ const AdminStaffUpdate = () => {
   };
 
   const handleReset = async () => {
-    if (!window.confirm(`Hapus SEMUA data kesalahan di periode ${selectedPeriode}?`)) return;
+    if (!window.confirm(`Hapus SEMUA data kesalahan di periode ${selectedPeriode} ${selectedTahun}?`)) return;
 
     setLoading(true);
     try {
       const { error } = await supabase
         .from('staff_progress')
         .delete()
-        .eq('periode', selectedPeriode);
+        .eq('periode', selectedPeriode)
+        .eq('tahun', parseInt(selectedTahun));
 
       if (error) throw error;
-      setMessage({ type: 'success', text: `Seluruh data periode ${selectedPeriode} telah dihapus.` });
+      setMessage({ type: 'success', text: `Seluruh data periode ${selectedPeriode} ${selectedTahun} telah dihapus.` });
       setFormData({
         release_voucher: 0, unapprove_pengajuan: 0, recalculate_delinquency: 0,
         transfer_pencairan: 0, salah_generate: 0, ppi_not_entry: 0,
@@ -268,16 +274,39 @@ const AdminStaffUpdate = () => {
             paddingBottom: '12px' 
           }}>
             <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Periode</label>
+              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Tahun</label>
+              <select 
+                className="btn btn-outline w-full" 
+                style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
+                value={selectedTahun}
+                onChange={(e) => setSelectedTahun(e.target.value)}
+              >
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '12px' }}>Periode (Bulan)</label>
               <select 
                 className="btn btn-outline w-full" 
                 style={{ textAlign: 'left', appearance: 'auto', padding: '6px 10px', height: '44px', fontSize: '14px' }}
                 value={selectedPeriode}
                 onChange={(e) => setSelectedPeriode(e.target.value)}
               >
-                <option value="April">April</option>
-                <option value="Maret">Maret</option>
+                <option value="Januari">Januari</option>
                 <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option>
+                <option value="April">April</option>
+                <option value="Mei">Mei</option>
+                <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option>
+                <option value="Agustus">Agustus</option>
+                <option value="September">September</option>
+                <option value="Oktober">Oktober</option>
+                <option value="November">November</option>
+                <option value="Desember">Desember</option>
               </select>
             </div>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { Search, Printer, Loader2, TrendingUp, TrendingDown, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal } from 'lucide-react';
+import { Search, Printer, Loader2, TrendingUp, TrendingDown, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal, Filter } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 import { supabase } from '../lib/supabase';
 import './TableStyles.css';
@@ -10,17 +10,20 @@ const DetailedReport = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedYear, setSelectedYear] = useState('2026');
 
   useEffect(() => {
     fetchCumulativeData();
-  }, []);
+  }, [selectedYear]);
 
   const fetchCumulativeData = async () => {
     try {
       setLoading(true);
-      const { data: records, error } = await supabase
-        .from('staff_progress')
-        .select('*');
+      let query = supabase.from('staff_progress').select('*');
+      if (selectedYear !== 'Semua') {
+        query = query.eq('tahun', parseInt(selectedYear));
+      }
+      const { data: records, error } = await query;
       
       if (error) throw error;
 
@@ -51,7 +54,11 @@ const DetailedReport = () => {
           acc[curr.id].sg += curr.salah_generate || 0;
           acc[curr.id].ppi += curr.ppi_not_entry || 0;
           // Logic for Validasi: Take latest month's value instead of sum
-          const periodRank: Record<string, number> = { 'April': 3, 'Maret': 2, 'Februari': 1 };
+          const periodRank: Record<string, number> = {
+            'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4,
+            'Mei': 5, 'Juni': 6, 'Juli': 7, 'Agustus': 8,
+            'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
+          };
           const currentPeriod = curr.periode || '';
           const existingPeriod = acc[curr.id].lastValPeriode || '';
           
@@ -108,19 +115,20 @@ const DetailedReport = () => {
 
           const totalKPI = p_rv + p_up + p_rd + p_tp + p_sg + p_ppi + p_val + p_tpk + p_ll;
           
-          // Format trend data for sparkline (Feb -> Mar -> Apr)
-          const trendData = [
-            { score: s.monthlyHistory['Februari'] || 100 },
-            { score: s.monthlyHistory['Maret'] || 100 },
-            { score: s.monthlyHistory['April'] || 100 }
-          ];
+          // Format trend data for sparkline (last 3 months dynamically)
+          const monthOrder = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+          const availableMonths = monthOrder.filter(m => s.monthlyHistory[m] !== undefined);
+          const last3 = availableMonths.slice(-3);
+          const trendData = last3.length >= 2
+            ? last3.map(m => ({ score: s.monthlyHistory[m] || 0 }))
+            : [{ score: 100 }, { score: 100 }, { score: 100 }];
 
-          // Calculate trend status (comparing last two months)
-          const maretVal = s.monthlyHistory['Maret'] || 100;
-          const aprilVal = s.monthlyHistory['April'] || 100;
+          // Calculate trend status (comparing last two available months)
+          const prevVal = last3.length >= 2 ? (s.monthlyHistory[last3[last3.length - 2]] || 100) : 100;
+          const lastVal = last3.length >= 1 ? (s.monthlyHistory[last3[last3.length - 1]] || 100) : 100;
           let trendStatus = 'stable';
-          if (aprilVal > maretVal) trendStatus = 'up';
-          else if (aprilVal < maretVal) trendStatus = 'down';
+          if (lastVal > prevVal) trendStatus = 'up';
+          else if (lastVal < prevVal) trendStatus = 'down';
 
           let color = '#ef4444';
           if (totalKPI >= 90) color = '#22c55e';
@@ -147,9 +155,22 @@ const DetailedReport = () => {
       <div className="page-header no-print">
         <div>
           <h1>Laporan Detail Akumulatif</h1>
-          <p>Rekapitulasi total kesalahan dan performa staff periode Februari - April.</p>
+          <p>Rekapitulasi total kesalahan dan performa staff {selectedYear !== 'Semua' ? `tahun ${selectedYear}` : 'semua tahun'}.</p>
         </div>
         <div className="header-actions">
+          <div className="filter-group">
+            <Filter size={16} />
+            <select
+              className="month-select"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="Semua">Semua Tahun</option>
+            </select>
+          </div>
           <div className="search-box">
             <Search size={16} />
             <input 
