@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { ProgressBar } from '../components/ui/ProgressBar';
-import { Search, Printer, Loader2, TrendingUp, TrendingDown, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal, Filter } from 'lucide-react';
+import { Search, Printer, Loader2, TrendingUp, TrendingDown, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal, Filter, Download } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 import { supabase } from '../lib/supabase';
 import './TableStyles.css';
@@ -11,10 +11,11 @@ const DetailedReport = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState('Semua');
+  const [selectedQuarter, setSelectedQuarter] = useState('Semua');
 
   useEffect(() => {
     fetchCumulativeData();
-  }, [selectedYear]);
+  }, [selectedYear, selectedQuarter]);
 
   const fetchCumulativeData = async () => {
     try {
@@ -28,8 +29,21 @@ const DetailedReport = () => {
       if (error) throw error;
 
       if (records) {
+        // Define months for each quarter
+        const quarterMonths: Record<string, string[]> = {
+          '1': ['Januari', 'Februari', 'Maret'],
+          '2': ['April', 'Mei', 'Juni'],
+          '3': ['Juli', 'Agustus', 'September'],
+          '4': ['Oktober', 'November', 'Desember']
+        };
+
+        // Filter records by Quarter if selected
+        const finalRecords = selectedQuarter === 'Semua' 
+          ? records 
+          : records.filter(r => (quarterMonths[selectedQuarter] || []).includes(r.periode));
+
         // Group by Staff ID
-        const grouped = records.reduce((acc: any, curr: any) => {
+        const grouped = finalRecords.reduce((acc: any, curr: any) => {
           if (!acc[curr.id]) {
             acc[curr.id] = {
               id: curr.id,
@@ -150,12 +164,51 @@ const DetailedReport = () => {
     window.print();
   };
 
+  const handleExportCSV = () => {
+    if (data.length === 0) return;
+    
+    const headers = ["No", "Kode", "Cabang", "Nama Staf", "RV", "UP", "RD", "TP", "SG", "PPI", "VAL", "TPK", "LL", "Point (%)", "Tren"];
+    
+    const rows = data.map((s, index) => [
+      index + 1,
+      `"${s.id}"`,
+      `"${s.branch}"`,
+      `"${s.name}"`,
+      s.rv || 0,
+      s.up || 0,
+      s.rd || 0,
+      s.tp || 0,
+      s.sg || 0,
+      s.ppi || 0,
+      s.val || 0,
+      s.tpk || 0,
+      s.ll || 0,
+      s.totalKPI,
+      s.trendStatus.toUpperCase()
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `MSA_Laporan_Detail_${selectedYear}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="page-container report-view">
       <div className="page-header no-print">
         <div>
           <h1>Laporan Detail Akumulatif</h1>
-          <p>Rekapitulasi total kesalahan dan performa staff {selectedYear !== 'Semua' ? `tahun ${selectedYear}` : 'semua tahun'}.</p>
+          <p>Rekapitulasi total kesalahan dan performa staff {selectedYear !== 'Semua' ? `tahun ${selectedYear}` : 'semua tahun'}{selectedQuarter !== 'Semua' ? ` (Triwulan ${selectedQuarter})` : ''}.</p>
         </div>
         <div className="header-actions">
           <div className="filter-group">
@@ -171,6 +224,20 @@ const DetailedReport = () => {
               <option value="Semua">Semua Tahun</option>
             </select>
           </div>
+          <div className="filter-group">
+            <Filter size={16} />
+            <select
+              className="month-select"
+              value={selectedQuarter}
+              onChange={(e) => setSelectedQuarter(e.target.value)}
+            >
+              <option value="Semua">Semua Triwulan</option>
+              <option value="1">Triwulan 1 (Jan-Mar)</option>
+              <option value="2">Triwulan 2 (Apr-Jun)</option>
+              <option value="3">Triwulan 3 (Jul-Sep)</option>
+              <option value="4">Triwulan 4 (Okt-Des)</option>
+            </select>
+          </div>
           <div className="search-box">
             <Search size={16} />
             <input 
@@ -180,6 +247,10 @@ const DetailedReport = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <button className="btn btn-outline" onClick={handleExportCSV}>
+            <Download size={16} />
+            <span>Ekspor CSV</span>
+          </button>
           <button className="btn btn-outline" onClick={handlePrint}>
             <Printer size={16} />
             <span>Cetak PDF</span>
@@ -348,6 +419,10 @@ const DetailedReport = () => {
         }
         .report-view .data-table th { font-size: 9px; padding: 6px 4px; }
         .report-view .data-table td { padding: 4px 4px; }
+        @media (max-width: 1024px) {
+          .report-view .data-table th span { font-size: 7px; }
+          .report-view .data-table td[data-label="Progres Tren"] { min-width: 120px; }
+        }
       `}</style>
     </div>
   );

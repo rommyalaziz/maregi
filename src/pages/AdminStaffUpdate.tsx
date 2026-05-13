@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Card } from '../components/ui/Card';
-import { Loader2, Save, RotateCcw, ImagePlus } from 'lucide-react';
+import { Loader2, Save, RotateCcw, ImagePlus, Clock } from 'lucide-react';
 
 const AdminStaffUpdate = () => {
   const [loading, setLoading] = useState(false);
@@ -30,6 +30,9 @@ const AdminStaffUpdate = () => {
   });
 
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [globalSettings, setGlobalSettings] = useState({ month: 'Mei', year: '2026' });
+  const [saveGlobalLoading, setSaveGlobalLoading] = useState(false);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   const categories = [
     { id: 'release_voucher', name: 'Release Voucher' },
@@ -45,31 +48,62 @@ const AdminStaffUpdate = () => {
 
   // 1. Fetch staff names for the dropdown
   useEffect(() => {
-    const fetchStaffList = async () => {
+    const fetchInitialData = async () => {
       try {
         setFetchLoading(true);
-        const { data, error } = await supabase
+
+        // Fetch Staff List
+        const { data: staff, error: staffError } = await supabase
           .from('staff_progress')
           .select('id, name, branch')
           .order('name');
         
-        if (error) throw error;
+        if (staffError) throw staffError;
         
-        const uniqueStaff = Array.from(new Map(data.map(item => [item.id, item])).values());
+        const uniqueStaff = Array.from(new Map(staff.map(item => [item.id, item])).values());
         setStaffList(uniqueStaff);
         
         if (uniqueStaff.length > 0) {
           setSelectedStaffId(uniqueStaff[0].id);
         }
+
+        // Fetch Global Settings
+        const { data: settings } = await supabase
+          .from('global_settings')
+          .select('value')
+          .eq('id', 'dashboard_period')
+          .single();
+
+        if (settings) {
+          setGlobalSettings({
+            month: settings.value.month || 'Mei',
+            year: settings.value.year?.toString() || '2026'
+          });
+        }
       } catch (err) {
-        console.error('Error fetching staff list:', err);
+        console.error('Error fetching initial data:', err);
       } finally {
         setFetchLoading(false);
       }
     };
 
-    fetchStaffList();
+    fetchInitialData();
+    fetchRecentActivity();
   }, []);
+
+  const fetchRecentActivity = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('staff_progress')
+        .select('name, branch, periode, tahun, updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      setRecentActivity(data || []);
+    } catch (err) {
+      console.error('Error fetching activity:', err);
+    }
+  };
 
   // 2. Fetch specific data when Staff or Periode changes
   useEffect(() => {
@@ -194,29 +228,14 @@ const AdminStaffUpdate = () => {
 
       console.log('Sending payload:', payload);
 
-      // Update or Insert process
-      const { data: existingRecord } = await supabase
+      // Update or Insert process using UPSERT
+      const { error: upsertError } = await supabase
         .from('staff_progress')
-        .select('id')
-        .eq('id', selectedStaffId)
-        .eq('periode', selectedPeriode)
-        .eq('tahun', parseInt(selectedTahun))
-        .single();
+        .upsert(payload, { 
+          onConflict: 'id,periode,tahun'
+        });
 
-      if (existingRecord) {
-        const { error: updateError } = await supabase
-          .from('staff_progress')
-          .update(payload)
-          .eq('id', selectedStaffId)
-          .eq('periode', selectedPeriode)
-          .eq('tahun', parseInt(selectedTahun));
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('staff_progress')
-          .insert([payload]);
-        if (insertError) throw insertError;
-      }
+      if (upsertError) throw upsertError;
 
       // Post-save: If an avatar was uploaded, sync it to ALL months for this staff
       if (avatar_url) {
@@ -229,6 +248,7 @@ const AdminStaffUpdate = () => {
 
       setMessage({ type: 'success', text: `Data ${staffInfo?.name} berhasil diperbarui.` });
       setAvatarFile(null);
+      fetchRecentActivity();
     } catch (err: any) {
       console.error('Final Caught Error:', err);
       // If it's the RLS error, give a more helpful instruction
@@ -271,6 +291,26 @@ const AdminStaffUpdate = () => {
     }
   };
 
+  const handleUpdateGlobalSettings = async () => {
+    setSaveGlobalLoading(true);
+    try {
+      const { error } = await supabase
+        .from('global_settings')
+        .upsert({
+          id: 'dashboard_period',
+          value: { month: globalSettings.month, year: parseInt(globalSettings.year) },
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      setMessage({ type: 'success', text: 'Periode global dashboard berhasil diperbarui.' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Gagal memperbarui periode global' });
+    } finally {
+      setSaveGlobalLoading(false);
+    }
+  };
+
   if (fetchLoading) {
     return (
       <div className="flex items-center justify-center p-20">
@@ -282,9 +322,59 @@ const AdminStaffUpdate = () => {
   return (
     <div className="page-container" style={{ padding: '16px 20px' }}>
       <div className="page-header" style={{ marginBottom: '16px' }}>
-        <div>
-          <h1 style={{ fontSize: '18px', marginBottom: '4px' }}>Update Kesalahan Staf</h1>
-          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Panel entri cepat untuk manajemen performa dan poin absolut staf.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '18px', marginBottom: '4px' }}>Update Kesalahan Staf</h1>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Panel entri cepat untuk manajemen performa dan poin absolut staf.</p>
+          </div>
+          
+          {/* Global Settings Control */}
+          <div className="global-settings-panel" style={{ 
+            background: 'white', 
+            padding: '10px 16px', 
+            borderRadius: '12px', 
+            border: '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#1e293b', textTransform: 'uppercase' }}>Periode Dashboard Global:</span>
+            <select 
+              value={globalSettings.month}
+              onChange={(e) => setGlobalSettings(prev => ({ ...prev, month: e.target.value }))}
+              style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+            >
+              {['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'].map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select 
+              value={globalSettings.year}
+              onChange={(e) => setGlobalSettings(prev => ({ ...prev, year: e.target.value }))}
+              style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+            >
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+            <button 
+              onClick={handleUpdateGlobalSettings}
+              disabled={saveGlobalLoading}
+              style={{ 
+                background: 'var(--color-primary)', 
+                color: 'white', 
+                padding: '4px 12px', 
+                borderRadius: '6px', 
+                fontSize: '11px', 
+                fontWeight: 600,
+                cursor: 'pointer',
+                opacity: saveGlobalLoading ? 0.7 : 1
+              }}
+            >
+              {saveGlobalLoading ? '...' : 'Set Default'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -292,7 +382,7 @@ const AdminStaffUpdate = () => {
         <Card style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
           
           {/* HEADER SECTON: Avatar + Selectors in one row */}
-          <div style={{ 
+          <div className="admin-update-header" style={{ 
             padding: '16px', 
             background: 'var(--color-bg-alt)', 
             borderBottom: '1px solid var(--color-border)', 
@@ -383,7 +473,7 @@ const AdminStaffUpdate = () => {
             )}
 
             {/* COMPACT 3-COLUMN GRID */}
-            <div style={{ 
+            <div className="admin-update-grid" style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
               gap: '12px', 
@@ -454,7 +544,86 @@ const AdminStaffUpdate = () => {
             </div>
           </form>
         </Card>
+
+        {/* RECENT ACTIVITY SECTION */}
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <Clock size={16} className="text-primary" />
+            <h2 style={{ fontSize: '14px', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Riwayat Update Terakhir</h2>
+          </div>
+          
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {recentActivity.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', background: 'white', borderRadius: '12px', border: '1px dashed var(--color-border)', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                Belum ada aktivitas update tercatat.
+              </div>
+            ) : (
+              recentActivity.map((activity, idx) => (
+                <div key={idx} style={{ 
+                  background: 'white', 
+                  padding: '12px 16px', 
+                  borderRadius: '10px', 
+                  border: '1px solid var(--color-border)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  boxShadow: 'var(--shadow-sm)'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600 }}>{activity.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                      {activity.branch} • {activity.periode} {activity.tahun}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--color-primary)' }}>Berhasil Diperbarui</div>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                      {new Date(activity.updated_at || Date.now()).toLocaleString('id-ID', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-update-content {
+            padding: 0 !important;
+          }
+          .admin-update-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .admin-update-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+          .admin-update-form-group {
+            width: 100% !important;
+          }
+          .page-header > div {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+          .global-settings-panel {
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+          .global-settings-panel button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -49,7 +49,8 @@ const Login = () => {
         id: user.id,
         username: user.username,
         fullName: user.full_name,
-        role: user.role
+        role: user.role,
+        cabang_id: user.cabang_id || null
       }));
 
       navigate('/dashboard');

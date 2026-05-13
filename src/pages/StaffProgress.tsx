@@ -3,7 +3,7 @@ import { Card } from '../components/ui/Card';
 import { Badge, type BadgeVariant } from '../components/ui/Badge';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { Drawer } from '../components/Drawer';
-import { Search, Filter, Eye, Loader2, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal } from 'lucide-react';
+import { Search, Filter, Eye, Loader2, Ticket, ShieldAlert, RefreshCw, Coins, FileX, ClipboardType, CheckCircle2, Wrench, MoreHorizontal, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import './TableStyles.css';
 
@@ -17,65 +17,106 @@ const StaffProgress = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const fetchDefaults = async () => {
+      try {
+        const { data: settings } = await supabase
+          .from('global_settings')
+          .select('value')
+          .eq('id', 'dashboard_period')
+          .single();
+
+        if (settings) {
+          setSelectedMonth(settings.value.month);
+          setSelectedYear(settings.value.year.toString());
+        }
+      } catch (err) {
+        console.error('Error fetching global settings:', err);
+      }
+    };
+    fetchDefaults();
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchStaffData = async () => {
+      try {
+        setLoading(true);
+        // Fetch from VIEW instead of table for automatic KPI calculation
+        let query = supabase
+          .from('v_staff_report')
+          .select('*');
+        
+        if (selectedMonth !== 'Semua') {
+          query = query.eq('periode', selectedMonth);
+        }
+        if (selectedYear !== 'Semua') {
+          query = query.eq('tahun', parseInt(selectedYear));
+        }
+
+        const { data: staff, error } = await query;
+        if (error) throw error;
+        if (isCancelled) return;
+
+        // Deduplicate staff records by ID (in case database has redundant entries for the same period)
+        const uniqueMap = new Map();
+        (staff || []).forEach(s => {
+          // If we have duplicates, we prefer the one that might have been updated last or just the first one
+          if (!uniqueMap.has(s.id)) {
+            uniqueMap.set(s.id, s);
+          }
+        });
+        const uniqueStaffList = Array.from(uniqueMap.values());
+
+        // Calculate Total KPI for each staff
+        const calcPts = (val: number, params: any) => {
+          for (const p of params) {
+            if (val >= p.min && val <= p.max) return p.pts;
+          }
+          return 0;
+        };
+
+        const calculatedData = uniqueStaffList.map(s => {
+          // Fix p_sg locally to override the faulty SQL view value (which returns 11 for 1 error)
+          const p_sg_fixed = calcPts(s.salah_generate || 0, [{min:0,max:0,pts:10},{min:1,max:1,pts:6},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
+
+          const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
+                           p_sg_fixed + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0) + (s.p_ll || 0);
+          
+          // Determine Status based on Total KPI (New Thresholds)
+          let status = 'critical';
+          let color = '#ef4444'; // Red
+          
+          if (totalKPI >= 90) {
+            status = 'on-track';
+            color = '#22c55e'; // Green
+          } else if (totalKPI >= 70) {
+            status = 'delayed';
+            color = '#f59e0b'; // Yellow/Orange
+          }
+
+          return { ...s, totalKPI, status, kpiColor: color };
+        });
+
+        // Sort by Total KPI descending
+        setData(calculatedData.sort((a, b) => b.totalKPI - a.totalKPI));
+      } catch (error) {
+        if (!isCancelled) {
+          console.error('Error fetching staff data:', error);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchStaffData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [selectedMonth, selectedYear]);
-
-  const fetchStaffData = async () => {
-    try {
-      setLoading(true);
-      // Fetch from VIEW instead of table for automatic KPI calculation
-      let query = supabase
-        .from('v_staff_report')
-        .select('*');
-      
-      if (selectedMonth !== 'Semua') {
-        query = query.eq('periode', selectedMonth);
-      }
-      if (selectedYear !== 'Semua') {
-        query = query.eq('tahun', parseInt(selectedYear));
-      }
-
-      const { data: staff, error } = await query;
-      if (error) throw error;
-
-      // Calculate Total KPI for each staff
-      const calcPts = (val: number, params: any) => {
-        for (const p of params) {
-          if (val >= p.min && val <= p.max) return p.pts;
-        }
-        return 0;
-      };
-
-      const calculatedData = (staff || []).map(s => {
-        // Fix p_sg locally to override the faulty SQL view value (which returns 11 for 1 error)
-        const p_sg_fixed = calcPts(s.salah_generate || 0, [{min:0,max:0,pts:10},{min:1,max:1,pts:6},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
-
-        const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
-                         p_sg_fixed + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0) + (s.p_ll || 0);
-        
-        // Determine Status based on Total KPI (New Thresholds)
-        let status = 'critical';
-        let color = '#ef4444'; // Red
-        
-        if (totalKPI >= 90) {
-          status = 'on-track';
-          color = '#22c55e'; // Green
-        } else if (totalKPI >= 70) {
-          status = 'delayed';
-          color = '#f59e0b'; // Yellow/Orange
-        }
-
-        return { ...s, totalKPI, status, kpiColor: color };
-      });
-
-      // Sort by Total KPI descending
-      setData(calculatedData.sort((a, b) => b.totalKPI - a.totalKPI));
-    } catch (error) {
-      console.error('Error fetching staff data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusConfig = (status: string) => {
     const s = (status || '').toLowerCase().trim();
@@ -159,6 +200,47 @@ const StaffProgress = () => {
     setCumulativeData(null);
   };
 
+  const handleExportCSV = () => {
+    if (data.length === 0) return;
+    
+    // Header for CSV
+    const headers = ["No", "Kode", "Cabang", "Nama Staf", "RV", "UP", "RD", "TP", "SG", "PPI", "VAL", "TPK", "LL", "Point", "Status"];
+    
+    // Map data to rows
+    const rows = data.map((s, index) => [
+      index + 1,
+      `"${s.id}"`, // Quote ID to prevent Excel from dropping leading zeros
+      `"${s.branch}"`,
+      `"${s.name}"`,
+      s.release_voucher || 0,
+      s.unapprove_pengajuan || 0,
+      s.recalculate_delinquency || 0,
+      s.transfer_pencairan || 0,
+      s.salah_generate || 0,
+      s.ppi_not_entry || 0,
+      s.validasi || 0,
+      s.tiket_perbaikan || 0,
+      s.lain_lain || 0,
+      s.totalKPI,
+      s.status
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `MSA_Performance_${selectedMonth}_${selectedYear}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -211,6 +293,10 @@ const StaffProgress = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <button className="btn btn-outline" onClick={handleExportCSV} title="Unduh Spreadsheet (CSV)">
+            <Download size={16} />
+            <span className="desktop-only">Ekspor CSV</span>
+          </button>
         </div>
       </div>
 
@@ -305,6 +391,8 @@ const StaffProgress = () => {
                     s.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     s.id.includes(searchQuery)
                   )
+                  // Apply 20 staff limit for default view (specific month, no search)
+                  .slice(0, (!searchQuery && selectedMonth !== 'Semua') ? 20 : undefined)
                   .map((staff, index) => {
                   const statusConfig = getStatusConfig(staff.status);
                   return (
@@ -370,6 +458,11 @@ const StaffProgress = () => {
             </tbody>
           </table>
         </div>
+        {data.length > 20 && !searchQuery && selectedMonth !== 'Semua' && (
+          <div style={{ textAlign: 'center', padding: '16px', borderTop: '1px solid var(--color-border)', color: 'var(--color-text-muted)', fontSize: '13px', background: 'var(--color-bg-alt)' }}>
+            Menampilkan 20 staf terbaik. Gunakan fitur <strong>Cari</strong> atau pilih <strong>Semua Bulan</strong> untuk melihat data selengkapnya.
+          </div>
+        )}
       </Card>
 
       <Drawer 

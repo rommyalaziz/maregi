@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, GraduationCap, FileBarChart, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, GraduationCap, FileBarChart, UserPlus, ClipboardCheck } from 'lucide-react';
 import './BottomNav.css';
 
 const BottomNav = () => {
@@ -26,6 +26,10 @@ const BottomNav = () => {
           <NavLink to="/admin/update" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
             <UserPlus size={20} />
             <span>Update</span>
+          </NavLink>
+          <NavLink to="/kunjungan" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}>
+            <ClipboardCheck size={20} />
+            <span>Kunjungan</span>
           </NavLink>
         </>
       )}

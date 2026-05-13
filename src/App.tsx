@@ -9,6 +9,7 @@ import StaffProgress from './pages/StaffProgress';
 import AdminStaffUpdate from './pages/AdminStaffUpdate';
 import DetailedReport from './pages/DetailedReport';
 import MdisgoMonitoring from './pages/MdisgoMonitoring';
+import Kunjungan from './pages/Kunjungan';
 import { useIdleTimer } from './hooks/useIdleTimer';
 
 // Protected Route Component
@@ -38,6 +39,7 @@ function AppContent() {
         <Route path="/staff" element={<StaffProgress />} />
         <Route path="/reports" element={<DetailedReport />} />
         <Route path="/mdisgo" element={<MdisgoMonitoring />} />
+        <Route path="/kunjungan" element={<Kunjungan />} />
         <Route path="/admin/update" element={<AdminStaffUpdate />} />
       </Route>
 

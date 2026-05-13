@@ -1,10 +1,23 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Building2, Users, FileBarChart, LogOut, UserPlus, GraduationCap } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Building2, Users, FileBarChart, LogOut, UserPlus, GraduationCap, Info, X, ClipboardCheck } from 'lucide-react';
+import KpiParameterModal from './KpiParameterModal';
 import './Sidebar.css';
 
-const Sidebar = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isKpiModalOpen, setIsKpiModalOpen] = React.useState(false);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    if (onClose) onClose();
+  }, [location.pathname]);
   
   // Get user session to check role
   const sessionData = sessionStorage.getItem('msa_session');
@@ -21,13 +34,28 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-box">
-          <div className="logo-icon"></div>
-          <span className="logo-text">SIREGI</span>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="sidebar-overlay mobile-only" 
+          onClick={onClose}
+        />
+      )}
+      
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <div className="logo-box">
+            <div className="logo-icon">
+              <LayoutDashboard size={16} color="white" />
+            </div>
+            <span className="logo-text">SIREGI</span>
+          </div>
+          {/* Mobile Close Button */}
+          <button className="sidebar-close-btn mobile-only" onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
-      </div>
       
       <nav className="sidebar-nav">
         <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -49,6 +77,10 @@ const Sidebar = () => {
               <UserPlus size={16} />
               <span>Update Kesalahan</span>
             </NavLink>
+            <NavLink to="/kunjungan" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <ClipboardCheck size={16} />
+              <span>Kunjungan</span>
+            </NavLink>
           </>
         )}
 
@@ -61,6 +93,15 @@ const Sidebar = () => {
           <GraduationCap size={16} />
           <span>MDISGO</span>
         </NavLink>
+
+        <button 
+          onClick={() => setIsKpiModalOpen(true)} 
+          className="nav-item" 
+          style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+        >
+          <Info size={16} />
+          <span>Parameter Performance</span>
+        </button>
       </nav>
 
       <div className="sidebar-footer">
@@ -69,7 +110,13 @@ const Sidebar = () => {
           <span>Keluar</span>
         </button>
       </div>
+
+      <KpiParameterModal 
+        isOpen={isKpiModalOpen} 
+        onClose={() => setIsKpiModalOpen(false)} 
+      />
     </aside>
+    </>
   );
 };
 

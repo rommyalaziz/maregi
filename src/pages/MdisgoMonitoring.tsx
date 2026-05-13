@@ -64,7 +64,7 @@ const MdisgoMonitoring = () => {
       const { data: branches, error } = await supabase
         .from('mdisgo_branches')
         .select('*')
-        .order('branch_name', { ascending: true });
+        .order('members_accessed', { ascending: false });
 
       if (error) throw error;
       setData(branches || []);
@@ -219,13 +219,13 @@ const MdisgoMonitoring = () => {
     }
   };
 
-  // Filtered + alphabetically sorted
+  // Filtered + sorted by members accessed descending
   const filteredData = data
     .filter(b =>
       b.branch_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.branch_code.includes(searchQuery)
     )
-    .sort((a, b) => a.branch_name.localeCompare(b.branch_name, 'id'));
+    .sort((a, b) => b.members_accessed - a.members_accessed || a.branch_name.localeCompare(b.branch_name, 'id'));
 
   return (
     <div className="mdisgo-container">

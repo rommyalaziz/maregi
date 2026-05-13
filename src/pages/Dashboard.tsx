@@ -8,8 +8,9 @@ import './Dashboard.css';
 const Dashboard = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState('Semua');
-  const [selectedYear, setSelectedYear] = useState('Semua');
+  const [selectedMonth, setSelectedMonth] = useState('Mei');
+  const [selectedYear, setSelectedYear] = useState('2026');
+  const [userRole, setUserRole] = useState('');
   const [summary, setSummary] = useState({
     avgKPI: 0,
     totalStaff: 0,
@@ -18,10 +19,48 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
+    const fetchSettingsAndData = async () => {
+      try {
+        // Fetch User Role
+        const session = sessionStorage.getItem('msa_session');
+        if (session) setUserRole(JSON.parse(session).role);
+
+        // Fetch Global Settings
+        const { data: settings } = await supabase
+          .from('global_settings')
+          .select('value')
+          .eq('id', 'dashboard_period')
+          .single();
+
+        if (settings) {
+          const activeMonth = settings.value.month;
+          const activeYear = settings.value.year.toString();
+          setSelectedMonth(activeMonth);
+          setSelectedYear(activeYear);
+          
+          // Fetch data immediately using these values instead of waiting for state update
+          await fetchDashboardDataInternal(activeMonth, activeYear);
+        } else {
+          fetchDashboardData();
+        }
+      } catch (err) {
+        console.error('Error fetching global settings:', err);
+        fetchDashboardData();
+      }
+    };
+
+    fetchSettingsAndData();
+  }, []);
+
+  useEffect(() => {
     fetchDashboardData();
   }, [selectedMonth, selectedYear]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = () => {
+    fetchDashboardDataInternal(selectedMonth, selectedYear);
+  };
+
+  const fetchDashboardDataInternal = async (month: string, year: string) => {
     try {
       setLoading(true);
       
@@ -29,11 +68,11 @@ const Dashboard = () => {
         .from('v_staff_report')
         .select('*');
         
-      if (selectedMonth !== 'Semua') {
-        query = query.eq('periode', selectedMonth);
+      if (month !== 'Semua') {
+        query = query.eq('periode', month);
       }
-      if (selectedYear !== 'Semua') {
-        query = query.eq('tahun', parseInt(selectedYear));
+      if (year !== 'Semua') {
+        query = query.eq('tahun', parseInt(year));
       }
 
       const { data: staff, error } = await query;
@@ -41,9 +80,20 @@ const Dashboard = () => {
       if (error) throw error;
 
       if (staff) {
+        // Calculate Total KPI for each staff
+        const calcPts = (val: number, params: any) => {
+          for (const p of params) {
+            if (val >= p.min && val <= p.max) return p.pts;
+          }
+          return 0;
+        };
+
         const processedStaff = staff.map(s => {
+          // Fix p_sg locally to override the faulty SQL view value
+          const p_sg_fixed = calcPts(s.salah_generate || 0, [{min:0,max:0,pts:10},{min:1,max:1,pts:6},{min:2,max:3,pts:2},{min:4,max:5,pts:1},{min:6,max:999,pts:0}]);
+
           const totalKPI = (s.p_rv || 0) + (s.p_up || 0) + (s.p_rd || 0) + (s.p_tp || 0) + 
-                           (s.p_sg || 0) + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0) + (s.p_ll || 0);
+                           p_sg_fixed + (s.p_ppi || 0) + (s.p_val || 0) + (s.p_tpk || 0) + (s.p_ll || 0);
           
           let status = 'critical';
           if (totalKPI >= 90) status = 'on-track';
@@ -54,9 +104,10 @@ const Dashboard = () => {
 
         setData(processedStaff);
         
-        // Calculate Summary
-        const totalStaff = processedStaff.length;
-        const avgKPI = Math.round(processedStaff.reduce((acc, curr) => acc + (curr.totalKPI || 0), 0) / (totalStaff || 1));
+        // Calculate Summary (Unique Staff Count)
+        const uniqueStaffIds = new Set(processedStaff.map(s => s.id));
+        const totalStaff = uniqueStaffIds.size;
+        const avgKPI = Math.round(processedStaff.reduce((acc, curr) => acc + (curr.totalKPI || 0), 0) / (processedStaff.length || 1));
         const totalTickets = processedStaff.reduce((acc, curr) => acc + (curr.tpk || 0), 0);
         const needSupport = processedStaff.filter(s => s.status === 'critical' || s.status === 'delayed').length;
 
@@ -84,55 +135,57 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
+      <div className="dashboard-header">
+        <div className="dashboard-header-title">
           <h1>Ringkasan Beranda</h1>
-          <p>Analisis pencapaian dan dukungan untuk progres staf regional.</p>
+          <p>Analisis capaian progress MSA</p>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-            <Filter size={14} color="#64748b" />
-            <select 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(e.target.value)}
-              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#334155', cursor: 'pointer' }}
-            >
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="Semua">Semua Tahun</option>
-            </select>
+        {userRole === 'Administrator' && (
+          <div className="dashboard-filters">
+            <div className="filter-group">
+              <Filter size={16} color="#6b7280" />
+              <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="filter-select"
+              >
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="Semua">Semua Tahun</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <Filter size={16} color="#6b7280" />
+              <select 
+                value={selectedMonth} 
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="filter-select"
+              >
+                <option value="Januari">Januari</option>
+                <option value="Februari">Februari</option>
+                <option value="Maret">Maret</option>
+                <option value="April">April</option>
+                <option value="Mei">Mei</option>
+                <option value="Juni">Juni</option>
+                <option value="Juli">Juli</option>
+                <option value="Agustus">Agustus</option>
+                <option value="September">September</option>
+                <option value="Oktober">Oktober</option>
+                <option value="November">November</option>
+                <option value="Desember">Desember</option>
+                <option value="Semua">Semua Bulan</option>
+              </select>
+            </div>
           </div>
-          <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-            <Filter size={14} color="#64748b" />
-            <select 
-              value={selectedMonth} 
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: '13px', color: '#334155', cursor: 'pointer' }}
-            >
-              <option value="Januari">Januari</option>
-              <option value="Februari">Februari</option>
-              <option value="Maret">Maret</option>
-              <option value="April">April</option>
-              <option value="Mei">Mei</option>
-              <option value="Juni">Juni</option>
-              <option value="Juli">Juli</option>
-              <option value="Agustus">Agustus</option>
-              <option value="September">September</option>
-              <option value="Oktober">Oktober</option>
-              <option value="November">November</option>
-              <option value="Desember">Desember</option>
-              <option value="Semua">Semua Bulan</option>
-            </select>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="highlights-grid">
         {/* BEST PERFORMERS */}
         <Card className="highlight-card success-gradient">
           <div className="highlight-header">
-            <Trophy size={24} className="icon-gold" />
+            <Trophy size={20} className="icon-gold" />
             <div>
               <h3>Apresiasi Kinerja Terbaik</h3>
               <p className="welcome-msg">Selamat atas pencapaian luar biasa Anda!</p>
@@ -143,7 +196,7 @@ const Dashboard = () => {
               <div key={staff.id} className="highlight-item">
                 <div className="avatar-wrapper highlight-avatar">
                    <img 
-                     src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=A8E6CF&color=2E7D61&bold=true`} 
+                     src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=dcfce7&color=166534&bold=true`} 
                      alt={staff.name} 
                    />
                 </div>
@@ -152,7 +205,7 @@ const Dashboard = () => {
                 </div>
                 <div className="item-score">
                   <span className="score">{staff.totalKPI}%</span>
-                  <ProgressBar progress={staff.totalKPI} color="#ffffff" height={6} />
+                  <ProgressBar progress={staff.totalKPI} color="#16a34a" height={6} />
                 </div>
               </div>
             ))}
@@ -162,7 +215,7 @@ const Dashboard = () => {
         {/* NEEDS SUPPORT */}
         <Card className="highlight-card warning-gradient">
           <div className="highlight-header">
-            <AlertCircle size={24} className="icon-white" />
+            <AlertCircle size={20} className="icon-amber" />
             <div>
               <h3>Butuh Fokus Tambahan</h3>
               <p className="welcome-msg">Tetap semangat, mari kita tingkatkan progres!</p>
@@ -173,7 +226,7 @@ const Dashboard = () => {
               <div key={staff.id} className="highlight-item">
                 <div className="avatar-wrapper highlight-avatar">
                    <img 
-                     src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=fee2e2&color=991b1b&bold=true`} 
+                     src={staff.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=fef3c7&color=92400e&bold=true`} 
                      alt={staff.name} 
                    />
                 </div>
@@ -182,7 +235,7 @@ const Dashboard = () => {
                 </div>
                 <div className="item-score">
                   <span className="score">{staff.totalKPI}%</span>
-                  <ProgressBar progress={staff.totalKPI} color="rgba(255,255,255,0.6)" height={6} />
+                  <ProgressBar progress={staff.totalKPI} color="#d97706" height={6} />
                 </div>
               </div>
             ))}
@@ -229,7 +282,7 @@ const Dashboard = () => {
 
         <Card className="metric-card">
           <div className="metric-header">
-            <h3>Butuh Bimbingan</h3>
+            <h3>Butuh Support</h3>
             <div className="metric-icon orange">
               <MessageSquare size={20} />
             </div>

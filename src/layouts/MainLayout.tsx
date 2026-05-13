@@ -1,11 +1,13 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import BottomNav from '../components/BottomNav';
 import './MainLayout.css';
 
 const MainLayout = () => {
   const [user, setUser] = React.useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
     const session = sessionStorage.getItem('msa_session');
@@ -21,11 +23,22 @@ const MainLayout = () => {
 
   return (
     <div className="main-layout">
-      <Sidebar />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
       <div className="main-content">
         <header className="main-header">
-          <div className="header-breadcrumbs">
-            <span className="breadcrumb-role">{user?.role || 'User'}</span>
+          <div className="header-left">
+            <button 
+              className="menu-toggle-btn mobile-only" 
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <div className="header-breadcrumbs">
+              <span className="breadcrumb-role">{user?.role || 'User'}</span>
+            </div>
           </div>
           <div className="user-profile">
             <div className="avatar">{getInitials(user?.fullName)}</div>
